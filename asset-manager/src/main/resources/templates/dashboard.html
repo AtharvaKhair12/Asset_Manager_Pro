@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>AssetManager Pro | Enterprise Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        /* Theme Variables */
+        :root {
+            --brand-blue: #004085;
+            --accent-light: #f1f8ff;
+            --success-green: #198754;
+            --danger-red: #dc3545;
+            --bg-body: #f4f7f6;
+            --bg-card: #ffffff;
+            --text-main: #212529;
+            --text-muted: #6c757d;
+            --border-color: #dee2e6;
+            --nav-bg: #004085;
+            --accent-glow: #00f2ff;
+        }
+
+        /* Stealth Mode Overrides */
+        body.dark-mode {
+            --bg-body: #0a0a0a;
+            --bg-card: #161616;
+            --text-main: #e0e0e0;
+            --text-muted: #a0a0a0;
+            --border-color: #2a2a2a;
+            --nav-bg: #000000;
+            --accent-glow: #39ff14; /* Cyber Lime Glow */
+            --brand-blue: #00f2ff; /* Electric Blue */
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .navbar {
+            background-color: var(--nav-bg) !important;
+            border-bottom: 2px solid var(--brand-blue);
+            transition: all 0.3s ease;
+        }
+
+        .card {
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            background-color: var(--bg-card);
+            color: var(--text-main);
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2) !important;
+            border-color: var(--accent-glow);
+        }
+
+        .text-dark { color: var(--text-main) !important; }
+        .text-muted { color: var(--text-muted) !important; }
+        .bg-light { background-color: rgba(255,255,255,0.05) !important; }
+        .table { color: var(--text-main); }
+        .table-light { --bs-table-bg: rgba(255,255,255,0.05); --bs-table-color: var(--text-main); }
+        .table-hover tbody tr:hover { background-color: var(--accent-light); color: #000; }
+        body.dark-mode .table-hover tbody tr:hover { background-color: #1f1f1f; color: var(--accent-glow); }
+
+        .status-badge { font-size: 0.75rem; padding: 4px 10px; border-radius: 50px; font-weight: 600; }
+        .badge-assigned { background-color: #d1e7dd; color: #0f5132; }
+        .badge-repair { background-color: #f8d7da; color: #842029; }
+        .badge-available { background-color: #cfe2ff; color: #084298; }
+
+        .content-wrapper { flex: 1 0 auto; }
+        footer { flex-shrink: 0; background: var(--bg-card); border-top: 1px solid var(--border-color); }
+        .stat-icon { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; }
+
+        /* Stealth Toggle Switch */
+        .form-check-input:checked { background-color: var(--brand-blue); border-color: var(--brand-blue); }
+        .theme-switch-wrapper { display: flex; align-items: center; }
+
+        .modal-content { background-color: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color); }
+        .form-control, .form-select { background-color: var(--bg-body); border-color: var(--border-color); color: var(--text-main); }
+        .form-control:focus, .form-select:focus { background-color: var(--bg-body); color: var(--text-main); border-color: var(--brand-blue); box-shadow: 0 0 8px var(--brand-blue); }
+    </style>
+</head>
+<body class="light-mode"> <div class="content-wrapper">
+    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm py-3">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/dashboard">
+                <i class="bi bi-shield-lock-fill me-2" style="color: var(--accent-glow)"></i>AssetManager <span class="fw-light">Pro</span>
+            </a>
+
+            <div class="ms-auto d-flex align-items-center">
+                <div class="theme-switch-wrapper me-4">
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input" type="checkbox" id="stealthModeToggle">
+                        <label class="form-check-label text-light small" for="stealthModeToggle">
+                            <i class="bi bi-moon-stars-fill me-1"></i> Stealth Mode
+                        </label>
+                    </div>
+                </div>
+
+                <span class="text-light me-3 small">
+                    <i class="bi bi-person-circle me-1"></i> Welcome, <strong th:text="${#authentication.name}">Admin</strong>
+                </span>
+                <a href="/logout" class="btn btn-outline-light btn-sm px-3 shadow-sm">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+
+        <div th:if="${message}" class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" style="border-left: 5px solid var(--success-green) !important;">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <strong th:text="${message}">Success!</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <div th:if="${not #lists.isEmpty(expiredAssets)}" class="alert alert-warning border-0 shadow-sm mb-4 p-3" style="border-left: 5px solid #ffc107 !important; background: rgba(255, 193, 7, 0.1); color: #856404;">
+            <div class="d-flex align-items-center">
+                <div class="bg-warning bg-opacity-10 p-2 rounded-circle me-3">
+                    <i class="bi bi-shield-exclamation text-warning fs-4"></i>
+                </div>
+                <div>
+                    <h6 class="mb-0 fw-bold">Lifecycle Alert: [[${#lists.size(expiredAssets)}]] Assets reached EOL</h6>
+                    <p class="small mb-0">Items older than 3 years detected. Replacement recommended.</p>
+                </div>
+                <button class="btn btn-sm btn-warning ms-auto fw-bold px-3 shadow-sm" data-bs-toggle="collapse" data-bs-target="#expiryDetails">
+                    View List
+                </button>
+            </div>
+            <div class="collapse mt-3" id="expiryDetails">
+                <div class="list-group list-group-flush border-top pt-2">
+                    <div th:each="exp : ${expiredAssets}" class="list-group-item bg-transparent px-0 border-0 d-flex justify-content-between small">
+                        <span><i class="bi bi-dot"></i> <span th:text="${exp.assetName}"></span></span>
+                        <span class="font-monospace" th:text="'Purchased: ' + ${exp.purchaseDate}"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card shadow-sm p-4">
+                    <div class="row align-items-center">
+                        <div class="col-lg-5">
+                            <h4 class="mb-1 fw-bold">Inventory Control Center</h4>
+                            <p class="text-muted small mb-0">Professional resource tracking & maintenance audit.</p>
+                        </div>
+                        <div class="col-lg-7 mt-3 mt-lg-0 d-flex gap-2">
+                            <form th:action="@{/dashboard/search}" method="get" class="flex-grow-1">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                                    <input type="text" name="keyword" class="form-control border-start-0 ps-0" placeholder="Filter inventory..." required>
+                                    <button type="submit" class="btn btn-primary px-4">Filter</button>
+                                </div>
+                            </form>
+                            <a th:href="@{/dashboard/export}" class="btn btn-success d-flex align-items-center gap-2 shadow-sm">
+                                <i class="bi bi-file-earmark-spreadsheet"></i> <span>Export</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-4 text-center">
+            <div class="col-md-4">
+                <div class="card shadow-sm p-3">
+                    <div class="d-flex align-items-center justify-content-center">
+                        <div class="stat-icon bg-primary bg-opacity-10 rounded-circle text-primary me-3">
+                            <i class="bi bi-pc-display fs-4"></i>
+                        </div>
+                        <div class="text-start">
+                            <h6 class="text-muted small mb-0">Hardware Items</h6>
+                            <h4 class="fw-bold mb-0" th:text="${hwCount}">0</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm p-3">
+                    <div class="d-flex align-items-center justify-content-center">
+                        <div class="stat-icon bg-success bg-opacity-10 rounded-circle text-success me-3">
+                            <i class="bi bi-cloud-check fs-4"></i>
+                        </div>
+                        <div class="text-start">
+                            <h6 class="text-muted small mb-0">Active Software</h6>
+                            <h4 class="fw-bold mb-0" th:text="${swCount}">0</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm p-3">
+                    <div class="d-flex align-items-center justify-content-center">
+                        <div class="stat-icon bg-danger bg-opacity-10 rounded-circle text-danger me-3">
+                            <i class="bi bi-exclamation-triangle fs-4"></i>
+                        </div>
+                        <div class="text-start">
+                            <h6 class="text-muted small mb-0">Repair Needed</h6>
+                            <h4 class="fw-bold mb-0" th:text="${repairCount}">0</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card shadow-sm sticky-top" style="top: 20px;">
+                    <div class="card-header bg-light py-3 border-0">
+                        <h6 class="mb-0 fw-bold text-primary"><i class="bi bi-plus-square-dotted me-2"></i>New Registration</h6>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/add-asset}" th:object="${newAsset}" method="post">
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Asset Name</label>
+                                <input type="text" th:field="*{assetName}" class="form-control" placeholder="e.g. MacBook Pro" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Serial Number</label>
+                                <input type="text" th:field="*{serialNumber}" class="form-control" placeholder="Unique ID" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Purchase Date</label>
+                                <input type="date" th:field="*{purchaseDate}" class="form-control" required>
+                            </div>
+                            <div class="row mb-3 g-2">
+                                <div class="col-6">
+                                    <label class="form-label small fw-bold">Category</label>
+                                    <select th:field="*{category}" class="form-select">
+                                        <option value="Hardware">Hardware</option>
+                                        <option value="Software">Software</option>
+                                        <option value="Peripheral">Peripheral</option>
+                                    </select>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small fw-bold">Status</label>
+                                    <select th:field="*{status}" class="form-select">
+                                        <option value="Available">Available</option>
+                                        <option value="Assigned">Assigned</option>
+                                        <option value="In Repair">In Repair</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm">Confirm Asset</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <div class="card shadow-sm overflow-hidden">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">Profile</th>
+                                <th>Serial No.</th>
+                                <th>Condition</th>
+                                <th class="text-end pe-4">Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="asset : ${assets}">
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-primary bg-opacity-10 p-2 rounded text-primary me-3">
+                                            <i class="bi bi-laptop" th:if="${asset.category != null and #strings.containsIgnoreCase(asset.category, 'Hardware')}"></i>
+                                            <i class="bi bi-code-square" th:if="${asset.category != null and #strings.containsIgnoreCase(asset.category, 'Software')}"></i>
+                                            <i class="bi bi-box-seam" th:if="${asset.category == null}"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold mb-0" th:text="${asset.assetName}"></div>
+                                            <div class="small text-muted" th:text="${#strings.abbreviate(asset.billDescription, 30)}"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="font-monospace small" th:text="${asset.serialNumber}"></td>
+                                <td>
+                                        <span class="status-badge"
+                                              th:classappend="${asset.status == 'Assigned' ? 'badge-assigned' : (asset.status == 'In Repair' ? 'badge-repair' : 'badge-available')}"
+                                              th:text="${asset.status}">Status</span>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <button class="btn btn-sm btn-light border me-1"
+                                            th:data-id="${asset.id}" th:data-name="${asset.assetName}" th:data-serial="${asset.serialNumber}"
+                                            th:data-purchaseDate="${asset.purchaseDate}" th:data-status="${asset.status}" th:data-category="${asset.category}"
+                                            onclick="openEditModal(this)">
+                                        <i class="bi bi-pencil-square text-primary"></i>
+                                    </button>
+                                    <a th:href="@{/delete-asset/{id}(id=${asset.id})}" class="btn btn-sm btn-light border" onclick="return confirm('Purge record?')">
+                                        <i class="bi bi-trash3 text-danger"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editAssetModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form th:action="@{/update-asset}" method="post">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold">Modify Asset Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="editId" name="id">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Item Name</label>
+                        <input type="text" id="editName" name="assetName" class="form-control" required>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">Serial Code</label>
+                            <input type="text" id="editSerial" name="serialNumber" class="form-control" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">Status</label>
+                            <select id="editStatus" name="status" class="form-select">
+                                <option value="Available">Available</option>
+                                <option value="Assigned">Assigned</option>
+                                <option value="In Repair">In Repair</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Purchase Date</label>
+                        <input type="date" id="editPurchaseDate" name="purchaseDate" class="form-control">
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="submit" class="btn btn-primary w-100 fw-bold">Save Audit Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<footer class="mt-5 py-4">
+    <div class="container text-center">
+        <div class="mb-1"><span class="fw-bold">AssetManager</span> <span class="text-primary fw-light">PRO EDITION</span></div>
+        <p class="text-muted small mb-0">&copy; 2026 Enterprise Solutions Group. Precision Tracking & Audit Suite.</p>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // --- STEALTH MODE LOGIC ---
+    const toggle = document.getElementById('stealthModeToggle');
+    const body = document.body;
+
+    // Check for saved preference
+    if (localStorage.getItem('theme') === 'dark') {
+        body.classList.add('dark-mode');
+        toggle.checked = true;
+    }
+
+    toggle.addEventListener('change', () => {
+        if (toggle.checked) {
+            body.classList.add('dark-mode');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            body.classList.remove('dark-mode');
+            localStorage.setItem('theme', 'light');
+        }
+    });
+
+    // --- MODAL LOGIC ---
+    function openEditModal(button) {
+        document.getElementById('editId').value = button.getAttribute('data-id');
+        document.getElementById('editName').value = button.getAttribute('data-name');
+        document.getElementById('editSerial').value = button.getAttribute('data-serial');
+        document.getElementById('editStatus').value = button.getAttribute('data-status');
+        document.getElementById('editPurchaseDate').value = button.getAttribute('data-purchaseDate');
+        new bootstrap.Modal(document.getElementById('editAssetModal')).show();
+    }
+</script>
+</body>
+</html>
