@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Public authorized node access for asset fault reporting and status monitoring.">
+    <title>Asset Node | Public View</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-deep: #050505;
+            --stealth-blue: #004085;
+            --accent-glow: #00f2ff;
+            --danger-red: #ff4d4d;
+            --text-pure: #ffffff;
+            --text-muted: #b0b0b0;
+            --glass: rgba(255, 255, 255, 0.03);
+            --border-color: #2a2a2a;
+            --transition-pro: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        body {
+            background: radial-gradient(circle at center, #0d0d0d, #050505);
+            color: var(--text-pure);
+            font-family: 'Inter', sans-serif;
+            margin: 0; padding: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- BACKGROUND TECH LOOP --- */
+        .tech-loop {
+            position: fixed;
+            top: 0; height: 200%; width: 100px;
+            font-size: 2rem;
+            color: var(--accent-glow);
+            opacity: 0.06;
+            display: flex; flex-direction: column; align-items: center; gap: 50px;
+            z-index: -2;
+            animation: loopSlide 35s linear infinite;
+            pointer-events: none;
+        }
+        .left-loop { left: 15px; }
+        .right-loop { right: 15px; }
+
+        @keyframes loopSlide {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-50%); }
+        }
+
+        .public-header {
+            background: linear-gradient(180deg, var(--stealth-blue) 0%, #000000 100%);
+            padding: 80px 20px 100px 20px;
+            border-bottom: 2px solid var(--accent-glow);
+            box-shadow: 0 0 30px rgba(0, 242, 255, 0.15);
+        }
+
+        .asset-card {
+            background: var(--glass);
+            backdrop-filter: blur(25px);
+            border: 1px solid var(--border-color);
+            border-radius: 32px;
+            margin: -60px auto 40px auto;
+            padding: 50px 30px;
+            max-width: 550px;
+            width: 92%;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.7);
+            transition: var(--transition-pro);
+        }
+
+        .device-icon {
+            font-size: 5rem;
+            color: var(--accent-glow);
+            filter: drop-shadow(0 0 20px rgba(0, 242, 255, 0.3));
+            margin-bottom: 25px;
+        }
+
+        .font-monospace {
+            color: var(--accent-glow) !important;
+            background: rgba(0, 242, 255, 0.08);
+            padding: 6px 12px;
+            border-radius: 8px;
+        }
+
+        /* SURGICAL FIX: Global Badge Transparency Overrides */
+        .badge {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            color: var(--text-pure) !important;
+            font-weight: 700;
+            backdrop-filter: blur(5px);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 8px 16px;
+            border-radius: 50px;
+        }
+
+        /* Category/Class Specific Glow */
+        .category-box {
+            border-color: var(--accent-glow) !important;
+            color: var(--accent-glow) !important;
+            background: rgba(0, 242, 255, 0.05) !important;
+        }
+
+        /* Success/Available State Glow */
+        .badge-success-glow {
+            border-color: #00ff88 !important;
+            color: #00ff88 !important;
+            background: rgba(0, 255, 136, 0.05) !important;
+        }
+
+        /* Red Alert Pulse for Repairing assets */
+        .badge-alert-repair {
+            background: rgba(255, 77, 77, 0.15) !important;
+            color: #ff4d4d !important;
+            border: 1px solid #ff4d4d !important;
+            animation: pulse-red-alert 1.5s infinite;
+        }
+
+        @keyframes pulse-red-alert {
+            0% { box-shadow: 0 0 0px rgba(255, 77, 77, 0); transform: scale(1); }
+            50% { box-shadow: 0 0 20px rgba(255, 77, 77, 0.6); transform: scale(1.02); }
+            100% { box-shadow: 0 0 0px rgba(255, 77, 77, 0); transform: scale(1); }
+        }
+
+        .btn-report {
+            background: var(--danger-red);
+            color: white;
+            border: none;
+            border-radius: 18px;
+            font-weight: 800;
+            padding: 22px;
+            font-size: 1.1rem;
+            transition: var(--transition-pro);
+            text-transform: uppercase;
+            box-shadow: 0 10px 25px rgba(255, 77, 77, 0.3);
+        }
+
+        .btn-report:hover {
+            background: #ffffff;
+            color: var(--danger-red);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(255, 77, 77, 0.5);
+        }
+
+        hr { border-color: rgba(255,255,255,0.1); opacity: 1; margin: 40px 0; }
+    </style>
+</head>
+<body>
+
+<div class="tech-loop left-loop" aria-hidden="true">
+    <i class="bi bi-cpu"></i><i class="bi bi-shield-lock"></i><i class="bi bi-qr-code"></i><i class="bi bi-database"></i><i class="bi bi-broadcast-pin"></i><i class="bi bi-gpu-card"></i>
+    <i class="bi bi-cpu"></i><i class="bi bi-shield-lock"></i><i class="bi bi-qr-code"></i><i class="bi bi-database"></i><i class="bi bi-broadcast-pin"></i><i class="bi bi-gpu-card"></i>
+</div>
+<div class="tech-loop right-loop" aria-hidden="true">
+    <i class="bi bi-broadcast-pin"></i><i class="bi bi-database"></i><i class="bi bi-qr-code"></i><i class="bi bi-shield-lock"></i><i class="bi bi-cpu"></i><i class="bi bi-display"></i>
+    <i class="bi bi-broadcast-pin"></i><i class="bi bi-database"></i><i class="bi bi-qr-code"></i><i class="bi bi-shield-lock"></i><i class="bi bi-cpu"></i><i class="bi bi-display"></i>
+</div>
+
+<header class="public-header text-center">
+    <div class="reveal-up">
+        <h2 class="fw-bold mb-1"><i class="bi bi-shield-lock-fill me-2" style="color: var(--accent-glow);"></i>AssetManager <span class="fw-light">Pro</span></h2>
+        <p class="small text-uppercase tracking-widest" style="color: var(--accent-glow); opacity: 0.8; letter-spacing: 2px;">Authorized Node Identification</p>
+    </div>
+</header>
+
+<main class="container">
+    <div th:if="${param.reported}" class="alert border-0 shadow-lg text-center mb-4 rounded-4 py-3" style="background: rgba(0, 255, 136, 0.15); color: #00ff88; margin-top: -30px; position: relative; z-index: 10;">
+        <i class="bi bi-check-circle-fill me-2"></i> FAULT REPORT COMMITTED TO MATRIX
+    </div>
+
+    <div class="asset-card text-center">
+        <div class="device-icon">
+            <i class="bi bi-laptop" th:if="${asset.category == 'Hardware'}"></i>
+            <i class="bi bi-code-square" th:if="${asset.category == 'Software'}"></i>
+            <i class="bi bi-box-seam" th:if="${asset.category != 'Hardware' and asset.category != 'Software'}"></i>
+        </div>
+
+        <h1 class="fw-bold h2 mb-2" th:text="${asset.assetName}">Device Node</h1>
+
+        <div class="mb-4">
+            <p class="small fw-bold mb-1" style="color: var(--text-muted);">UNIQUE IDENTIFIER</p>
+            <code class="font-monospace" th:text="${asset.serialNumber}">S/N-0000-0000</code>
+        </div>
+
+        <div class="row g-3 mt-2">
+            <div class="col-6 border-end border-white border-opacity-10">
+                <p class="small fw-bold mb-2" style="color: var(--text-muted);">CLASS</p>
+                <span class="badge category-box px-3 py-2" th:text="${asset.category}">Category</span>
+            </div>
+            <div class="col-6">
+                <p class="small fw-bold mb-2" style="color: var(--text-muted);">STATE</p>
+                <span class="badge px-3 py-2"
+                      th:classappend="${asset.status == 'Available' ? 'badge-success-glow' : (asset.status == 'In Repair' ? 'badge-alert-repair' : '')}"
+                      th:text="${asset.status}">Available</span>
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="mb-4 text-start p-3 rounded-4" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);">
+            <p class="small fw-bold text-uppercase mb-2" style="color: var(--accent-glow);">Node Description</p>
+            <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.5;" th:text="${asset.billDescription ?: 'No internal audit notes provided.'}"></p>
+        </div>
+
+        <div th:if="${asset.status != 'In Repair'}" class="mt-4">
+            <p class="small mb-4" style="color: var(--text-muted);">Anomalies detected? Initialize maintenance ticket below.</p>
+            <form th:action="@{/public/report-issue/{id}(id=${asset.id})}" method="post">
+                <button type="submit" class="btn btn-report w-100 shadow-lg" aria-label="Report hardware fault to administrator">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> REPORT HARDWARE FAULT
+                </button>
+            </form>
+        </div>
+
+        <div th:if="${asset.status == 'In Repair'}" class="alert bg-primary bg-opacity-10 border border-primary border-opacity-25 text-info rounded-4 mt-4 py-3">
+            <i class="bi bi-tools me-2 text-info"></i> <strong>SYSTEM NOTE:</strong> This node is currently undergoing technician audit.
+        </div>
+    </div>
+</main>
+
+<footer class="mt-auto py-5 text-center border-top border-secondary border-opacity-10 opacity-75">
+    <div class="container">
+        <div class="mb-1 fw-bold">AssetManager <span class="text-primary fw-light" style="color: var(--accent-glow) !important;">PRO EDITION</span></div>
+        <p class="small mb-0" style="color: var(--text-muted);">&copy; 2026 Enterprise Solutions Group. Precision Tracking Suite.</p>
+        <p class="x-small mt-2" style="font-size: 0.7rem; color: var(--text-muted); opacity: 0.6;">Designed by Atharva • Engineering Standard v4.0</p>
+    </div>
+</footer>
+
+</body>
+</html>

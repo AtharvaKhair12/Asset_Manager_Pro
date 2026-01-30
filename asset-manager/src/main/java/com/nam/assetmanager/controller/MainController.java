@@ -5,6 +5,7 @@ import com.nam.assetmanager.model.User;
 import com.nam.assetmanager.repositories.AssetRepository;
 import com.nam.assetmanager.service.AssetService;
 import com.nam.assetmanager.service.UserService;
+import com.nam.assetmanager.util.QRCodeGenerator; // Import your new Utility
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -69,6 +70,15 @@ public class MainController {
                 .filter(a -> a.getPurchaseDate() != null && a.getPurchaseDate().isBefore(expiryLimit))
                 .toList();
 
+        // 3. QR Code Logic for "Edit" Modals
+        // We generate the code for each asset so it's ready when you click 'Edit'
+        assets.forEach(asset -> {
+            String publicUrl = "http://localhost:8080/public/asset/" + asset.getId();
+            // We use a helper method to attach this temporarily if you add a 'qrCode' field to Asset
+            // Or we can pass a Map. For now, we'll assume you added 'private String qrBase64' to Asset.java
+            asset.setQrCodeBase64(QRCodeGenerator.getQRCodeImage(publicUrl, 250, 250));
+        });
+
         model.addAttribute("assets", assets);
         model.addAttribute("expiredAssets", expiredAssets);
         model.addAttribute("hwCount", hwCount);
@@ -82,6 +92,13 @@ public class MainController {
     @GetMapping("/dashboard/search")
     public String searchAssets(@RequestParam("keyword") String keyword, Model model, Principal principal) {
         List<Asset> results = assetRepository.searchAssets(keyword);
+
+        // Ensure search results also have QR codes generated
+        results.forEach(asset -> {
+            String publicUrl = "http://localhost:8080/public/asset/" + asset.getId();
+            asset.setQrCodeBase64(QRCodeGenerator.getQRCodeImage(publicUrl, 250, 250));
+        });
+
         model.addAttribute("assets", results);
         model.addAttribute("newAsset", new Asset());
         return "dashboard";
@@ -95,17 +112,15 @@ public class MainController {
         List<Asset> assets = assetService.getAssetsByUsername(principal.getName());
         java.io.PrintWriter writer = response.getWriter();
 
-        // CSV Header
         writer.println("Asset Name,Serial Number,Category,Status,Description");
 
-        // CSV Data Rows
         for (Asset asset : assets) {
             writer.println(String.format("%s,%s,%s,%s,%s",
                     asset.getAssetName(),
                     asset.getSerialNumber(),
                     asset.getCategory(),
                     asset.getStatus(),
-                    asset.getBillDescription().replace(",", ";"))); // Prevent comma breaking CSV
+                    asset.getBillDescription() != null ? asset.getBillDescription().replace(",", ";") : ""));
         }
     }
 
@@ -120,7 +135,6 @@ public class MainController {
 
     @PostMapping("/update-asset")
     public String updateAsset(@ModelAttribute("asset") Asset asset, Principal principal, RedirectAttributes ra) {
-        // JPA save() performs an update if the ID is already present
         assetService.saveAsset(asset, principal.getName());
         ra.addFlashAttribute("message", "Asset updated successfully!");
         return "redirect:/dashboard";

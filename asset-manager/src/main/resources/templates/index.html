@@ -1,19 +1,234 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Asset Manager - Home</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AssetManager Pro: The ultimate high-performance Physical-to-Digital inventory bridge for secure resource tracking.">
+    <title>AssetManager Pro | Stealth Edition</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-deep: #050505;
+            --accent-glow: #00f2ff;
+            --accent-dim: rgba(0, 242, 255, 0.1);
+            --text-pure: #ffffff;
+            --text-muted: #b0b0b0; /* High-contrast silver for accessibility */
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --transition-pro: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        body {
+            background: radial-gradient(circle at top right, #0d0d0d, #050505);
+            color: var(--text-pure);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            margin: 0;
+        }
+
+        /* --- BACKGROUND TECH LOOP --- */
+        .tech-loop {
+            position: fixed;
+            top: 0;
+            height: 200%;
+            width: 100px;
+            font-size: 2rem;
+            color: var(--accent-glow);
+            opacity: 0.08;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 50px;
+            z-index: -2;
+            animation: loopSlide 30s linear infinite;
+            pointer-events: none;
+        }
+        .left-loop { left: 20px; }
+        .right-loop { right: 20px; }
+
+        @keyframes loopSlide {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-50%); }
+        }
+
+        .grid-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: linear-gradient(var(--glass-border) 1px, transparent 1px),
+                              linear-gradient(90deg, var(--glass-border) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+            opacity: 0.2;
+            mask-image: radial-gradient(circle at center, black, transparent 80%);
+        }
+
+        .hero-section {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .reveal-up {
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 0.8s forwards;
+        }
+
+        @keyframes fadeInUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .main-title {
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 800;
+            letter-spacing: -3px;
+            background: linear-gradient(to bottom, #fff 50%, #666);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+
+        .accent-text {
+            color: var(--accent-glow);
+            text-shadow: 0 0 30px rgba(0, 242, 255, 0.5);
+        }
+
+        .feature-container { padding: 100px 0; }
+
+        .glass-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            padding: 40px;
+            backdrop-filter: blur(10px);
+            transition: var(--transition-pro);
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .glass-card:hover {
+            border-color: var(--accent-glow);
+            background: rgba(0, 242, 255, 0.02);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 20px rgba(0, 242, 255, 0.1);
+            transform: translateY(-10px) scale(1.02);
+        }
+
+        .btn-glow {
+            background: var(--accent-glow);
+            color: #000;
+            font-weight: 700;
+            padding: 15px 40px;
+            border-radius: 14px;
+            border: none;
+            transition: var(--transition-pro);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 0 20px var(--accent-dim);
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-glow:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 40px var(--accent-glow);
+            background: #fff;
+            color: #000;
+        }
+
+        .btn-outline-custom {
+            color: #fff;
+            border: 1px solid var(--glass-border);
+            padding: 15px 40px;
+            border-radius: 14px;
+            text-decoration: none;
+            transition: var(--transition-pro);
+            display: inline-block;
+        }
+
+        .btn-outline-custom:hover {
+            background: rgba(255,255,255,0.05);
+            border-color: #fff;
+        }
+    </style>
 </head>
-<body class="bg-light">
-<div class="container mt-5">
-    <div class="card shadow p-4 text-center">
-        <h1>Welcome to Asset Manager</h1>
-        <p class="text-muted">Tracking company assets with precision.</p>
-        <div class="mt-4">
-            <a href="/login" class="btn btn-primary">Login</a>
-            <a href="/register" class="btn btn-outline-secondary">Register New Admin</a>
-        </div>
-    </div>
+<body>
+
+<div class="grid-overlay"></div>
+
+<div class="tech-loop left-loop" aria-hidden="true">
+    <i class="bi bi-cpu"></i><i class="bi bi-shield-lock"></i><i class="bi bi-cloud-arrow-up"></i><i class="bi bi-database"></i><i class="bi bi-qr-code"></i><i class="bi bi-display"></i><i class="bi bi-gpu-card"></i>
+    <i class="bi bi-cpu"></i><i class="bi bi-shield-lock"></i><i class="bi bi-cloud-arrow-up"></i><i class="bi bi-database"></i><i class="bi bi-qr-code"></i><i class="bi bi-display"></i><i class="bi bi-gpu-card"></i>
 </div>
+<div class="tech-loop right-loop" aria-hidden="true">
+    <i class="bi bi-gpu-card"></i><i class="bi bi-display"></i><i class="bi bi-qr-code"></i><i class="bi bi-database"></i><i class="bi bi-cloud-arrow-up"></i><i class="bi bi-shield-lock"></i><i class="bi bi-cpu"></i>
+    <i class="bi bi-gpu-card"></i><i class="bi bi-display"></i><i class="bi bi-qr-code"></i><i class="bi bi-database"></i><i class="bi bi-cloud-arrow-up"></i><i class="bi bi-shield-lock"></i><i class="bi bi-cpu"></i>
+</div>
+
+<main>
+    <section class="hero-section">
+        <div class="container">
+            <div class="reveal-up" style="animation-delay: 0.2s;">
+                <span class="badge rounded-pill mb-4 px-3 py-2" style="background: rgba(0,242,255,0.1); color: var(--accent-glow); border: 1px solid var(--accent-glow);">
+                    <i class="bi bi-shield-lock-fill me-2" aria-hidden="true"></i>ASSETMANAGER PRO EDITION
+                </span>
+                <h1 class="main-title">Secure. Track. <span class="accent-text">Sync.</span></h1>
+                <p class="lead mx-auto mb-5" style="max-width: 650px; font-size: 1.25rem; color: var(--text-muted);">
+                    The ultimate Physical-to-Digital inventory bridge. Monitor lifecycle, automate reporting, and secure your high-value resources.
+                </p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="/login" class="btn btn-glow" aria-label="Enter the administrative terminal">Enter Terminal</a>
+                    <a href="/register" class="btn btn-outline-custom" aria-label="Initialize a new administrative node">Initialize Admin</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="feature-container">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <article class="glass-card text-center reveal-up" style="animation-delay: 0.4s;">
+                        <i class="bi bi-qr-code-scan display-4 text-primary mb-4" style="color: var(--accent-glow) !important;" aria-hidden="true"></i>
+                        <h2 class="h4 fw-bold">QR Linkage</h2>
+                        <p style="color: var(--text-muted);" class="small">Instant mobile reporting via unique physical identifier mapping.</p>
+                    </article>
+                </div>
+                <div class="col-md-4">
+                    <article class="glass-card text-center reveal-up" style="animation-delay: 0.6s;">
+                        <i class="bi bi-activity display-4 text-info mb-4" style="color: var(--accent-glow) !important;" aria-hidden="true"></i>
+                        <h2 class="h4 fw-bold">Pulse Tracking</h2>
+                        <p style="color: var(--text-muted);" class="small">Real-time status updates and automated maintenance alerts.</p>
+                    </article>
+                </div>
+                <div class="col-md-4">
+                    <article class="glass-card text-center reveal-up" style="animation-delay: 0.8s;">
+                        <i class="bi bi-cpu display-4 text-warning mb-4" style="color: var(--accent-glow) !important;" aria-hidden="true"></i>
+                        <h2 class="h4 fw-bold">Smart Lifecycle</h2>
+                        <p style="color: var(--text-muted);" class="small">Intelligent EOL detection for proactive hardware replacement.</p>
+                    </article>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="mt-auto py-5 text-center border-top border-secondary border-opacity-10 opacity-75">
+    <div class="container">
+        <div class="mb-1 fw-bold">AssetManager <span class="text-primary fw-light" style="color: var(--accent-glow) !important;">PRO EDITION</span></div>
+        <p class="small mb-0" style="color: var(--text-muted);">&copy; 2026 Enterprise Solutions Group. Precision Tracking Suite.</p>
+    </div>
+</footer>
+
 </body>
 </html>

@@ -19,11 +19,19 @@ public class Asset {
     @Column(length = 1000)
     private String billDescription;
 
-    private LocalDate purchaseDate; // The new field for Lifecycle tracking
+    // Lifecycle tracking field
+    private LocalDate purchaseDate;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
+    /**
+     * The @Transient annotation is key. It allows us to hold the
+     * QR code string in memory for the UI without storing it in MySQL.
+     */
+    @Transient
+    private String qrCodeBase64;
 
     // --- GETTERS AND SETTERS ---
 
@@ -50,4 +58,7 @@ public class Asset {
 
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
+
+    public String getQrCodeBase64() { return qrCodeBase64; }
+    public void setQrCodeBase64(String qrCodeBase64) { this.qrCodeBase64 = qrCodeBase64; }
 }

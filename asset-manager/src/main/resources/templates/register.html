@@ -1,39 +1,184 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Register Admin</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Initialize a new administrative node for the AssetManager Pro tracking network.">
+    <title>AssetManager Pro | Node Initialization</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-deep: #050505;
+            --accent-glow: #00f2ff;
+            --accent-dim: rgba(0, 242, 255, 0.1);
+            --text-pure: #ffffff;
+            --text-muted: #b0b0b0; /* Lightened for high-visibility contrast */
+            --glass: rgba(255, 255, 255, 0.02);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --transition-pro: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        body {
+            background: radial-gradient(circle at bottom left, #0d0d0d, #050505);
+            color: var(--text-pure);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 40px 0;
+            margin: 0;
+        }
+
+        /* --- AUTH CARD --- */
+        .auth-card {
+            background: var(--glass);
+            backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            padding: 3rem;
+            transition: var(--transition-pro);
+            animation: fadeInRight 0.8s forwards;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+        }
+
+        @keyframes fadeInRight {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .auth-card:focus-within {
+            border-color: var(--accent-glow);
+            box-shadow: 0 0 50px rgba(0, 242, 255, 0.05);
+        }
+
+        /* --- FORM STYLING --- */
+        .form-label {
+            font-weight: 700;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--glass-border);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 10px;
+            transition: var(--transition-pro);
+        }
+
+        .form-control:focus {
+            background: rgba(255,255,255,0.06);
+            border-color: var(--accent-glow);
+            box-shadow: 0 0 15px var(--accent-dim);
+            color: white;
+        }
+
+        /* --- ACTION BUTTON --- */
+        .btn-initialize {
+            background: var(--accent-glow);
+            color: #000;
+            font-weight: 800;
+            padding: 16px;
+            border-radius: 12px;
+            border: none;
+            transition: var(--transition-pro);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 20px;
+        }
+
+        .btn-initialize:hover {
+            background: #ffffff;
+            box-shadow: 0 0 30px var(--accent-glow);
+            transform: scale(1.02);
+        }
+
+        .auth-footer-link {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .auth-footer-link:hover {
+            color: var(--accent-glow);
+        }
+    </style>
 </head>
-<body class="bg-light">
-<div class="container mt-5">
+<body>
+
+<div class="container">
     <div class="row justify-content-center">
-        <div class="col-md-6 card shadow p-4">
-            <h2 class="text-center">Create Admin Account</h2>
-            <form th:action="@{/register}" method="post">
-                <div class="mb-3">
-                    <label>Full Name</label>
-                    <input type="text" name="fullName" class="form-control" required>
+        <div class="col-lg-8 col-xl-7">
+            <main class="auth-card">
+                <div class="row align-items-center">
+                    <div class="col-md-5 d-none d-md-block border-end border-secondary border-opacity-25 pe-4">
+                        <i class="bi bi-person-plus-fill display-3 text-primary mb-4" style="color: var(--accent-glow) !important;" aria-hidden="true"></i>
+                        <h1 class="h2 fw-bold">Node <span class="fw-light">Setup</span></h1>
+                        <p style="color: var(--text-muted);" class="small">Initialize your administrative credentials for the AssetManager Pro network.</p>
+                        <ul class="list-unstyled mt-4 small" style="color: var(--text-muted);">
+                            <li class="mb-2"><i class="bi bi-check2-circle me-2 text-info"></i> Secure Encryption</li>
+                            <li class="mb-2"><i class="bi bi-check2-circle me-2 text-info"></i> Multi-Node Access</li>
+                            <li><i class="bi bi-check2-circle me-2 text-info"></i> Audit Logging</li>
+                        </ul>
+                    </div>
+
+                    <div class="col-md-7 ps-md-5">
+                        <form th:action="@{/register}" method="post">
+                            <div class="mb-3">
+                                <label class="form-label" for="fullName">Identity (Full Name)</label>
+                                <input type="text" id="fullName" name="fullName" class="form-control" placeholder="John Doe" required>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <label class="form-label" for="username">Username</label>
+                                    <input type="text" id="username" name="username" class="form-control" placeholder="admin_x" required>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label" for="contactNo">Contact</label>
+                                    <input type="text" id="contactNo" name="contactNo" class="form-control" placeholder="+91...">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label" for="email">Network Email</label>
+                                <input type="email" id="email" name="email" class="form-control" placeholder="corp@domain.com" required>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label" for="password">Secure Passkey</label>
+                                <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
+                            </div>
+
+                            <button type="submit" class="btn btn-initialize w-100 shadow-lg" aria-label="Activate administrative node">Activate Node</button>
+                        </form>
+
+                        <div class="text-center mt-4">
+                            <a href="/login" class="auth-footer-link" aria-label="Return to login portal">Existing Operator? Return to Login</a>
+                        </div>
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <label>Username</label>
-                    <input type="text" name="username" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                    <label>Email</label>
-                    <input type="email" name="email" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                    <label>Contact No</label>
-                    <input type="text" name="contactNo" class="form-control">
-                </div>
-                <div class="mb-3">
-                    <label>Password</label>
-                    <input type="password" name="password" class="form-control" required>
-                </div>
-                <button type="submit" class="btn btn-success w-100">Register</button>
-            </form>
+            </main>
+
+            <footer class="mt-5 py-4 text-center border-top border-secondary border-opacity-10 opacity-75">
+                <div class="mb-1 fw-bold">AssetManager <span class="text-primary fw-light" style="color: var(--accent-glow) !important;">PRO EDITION</span></div>
+                <p class="small mb-0" style="color: var(--text-muted);">&copy; 2026 Enterprise Solutions Group. Precision Tracking Suite.</p>
+            </footer>
         </div>
     </div>
 </div>
+
 </body>
 </html>

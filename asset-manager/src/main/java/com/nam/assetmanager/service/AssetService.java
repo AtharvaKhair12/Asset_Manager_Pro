@@ -33,4 +33,8 @@ public class AssetService {
     public void deleteAsset(Long id) {
         assetRepository.deleteById(id);
     }
+
+    public Asset getAssetById(Long id) {
+        return null;
+    }
 }

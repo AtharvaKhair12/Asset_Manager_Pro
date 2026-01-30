@@ -4,7 +4,6 @@ import com.nam.assetmanager.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -30,9 +29,16 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())
+                .csrf(csrf -> csrf.disable()) // Mandatory for public POST reports
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/register", "/login", "/css/**", "/js/**").permitAll()
+                        /* RULE 1: Whitelist landing, auth, and static resources */
+                        .requestMatchers("/", "/register", "/login", "/css/**", "/js/**", "/images/**").permitAll()
+
+                        /* RULE 2: String-based whitelisting for public scan paths.
+                         * This replaces the AntPathRequestMatcher to resolve IDE errors. */
+                        .requestMatchers("/public/**").permitAll()
+
+                        /* RULE 3: Protect all administrative endpoints */
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -40,13 +46,14 @@ public class SecurityConfig {
                         .defaultSuccessUrl("/dashboard", true)
                         .permitAll()
                 )
-                .logout(logout -> logout.logoutSuccessUrl("/login?logout").permitAll());
+                .logout(logout -> logout
+                        .logoutSuccessUrl("/login?logout")
+                        .permitAll()
+                );
 
         return http.build();
     }
 
-    // THIS REPLACES THE RED CODE.
-    // We are telling the manager directly to use your service.
     @Bean
     public AuthenticationManager authManager(HttpSecurity http) throws Exception {
         AuthenticationManagerBuilder authenticationManagerBuilder =
