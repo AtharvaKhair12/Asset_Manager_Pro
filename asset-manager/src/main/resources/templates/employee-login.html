@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Secure employee login portal for AssetManager Pro.">
+    <title>Employee Login | AssetManager Pro</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-deep: #050505;
+            --accent-glow: #00f2ff;
+            --accent-secondary: #004085;
+            --text-pure: #ffffff;
+            --text-bright: #f0f0f0;
+            --text-muted: #d1d5db;
+            --border-glass: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            background: var(--bg-deep);
+            color: var(--text-pure);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* --- EFFECTS --- */
+        .aurora-blob { position: absolute; filter: blur(100px); opacity: 0.3; pointer-events: none; z-index: -2; }
+        .blob-1 { top: -20%; left: -20%; width: 60vw; height: 60vw; background: radial-gradient(circle, var(--accent-glow), transparent 60%); }
+        .blob-2 { bottom: -20%; right: -20%; width: 70vw; height: 70vw; background: radial-gradient(circle, var(--accent-secondary), transparent 60%); }
+
+        .grid-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+            background-size: 60px 60px; z-index: -1;
+            mask-image: radial-gradient(circle at center, black 40%, transparent 90%);
+        }
+
+        /* --- LOGIN CARD --- */
+        .auth-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid var(--border-glass);
+            border-radius: 32px;
+            padding: 3rem;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .auth-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -50%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.04), transparent);
+            transform: skewX(-25deg);
+            transition: 0.5s;
+            pointer-events: none;
+        }
+
+        .auth-card:hover::before {
+            left: 150%;
+            transition: 0.7s;
+        }
+
+        /* --- FORM CONTROLS --- */
+        .form-control {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-glass);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--accent-glow);
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
+            color: white;
+        }
+
+        .btn-primary {
+            background: var(--accent-glow);
+            color: var(--bg-deep);
+            border: none;
+            border-radius: 12px;
+            padding: 15px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background: #ffffff;
+            color: var(--accent-glow);
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .alert-error {
+            background: rgba(255, 77, 77, 0.1);
+            border: 1px solid rgba(255, 77, 77, 0.3);
+            color: #ff4d4d;
+        }
+        .alert-success {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            color: #00ff88;
+        }
+        
+        .admin-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.3s ease;
+        }
+        .admin-link:hover {
+            color: var(--accent-glow);
+        }
+
+        .btn-glass-nav {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            color: var(--text-bright);
+            padding: 12px 20px;
+            text-decoration: none;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            backdrop-filter: blur(10px);
+            font-weight: 600;
+            width: 100%;
+            margin-bottom: 12px;
+        }
+
+        .btn-glass-nav:hover {
+            border-color: var(--accent-glow);
+            background: rgba(0, 242, 255, 0.05);
+            color: white;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4), 0 0 15px rgba(0, 242, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .btn-glass-nav i {
+            margin-right: 10px;
+            color: var(--accent-glow);
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+
+<div id="cursor-glow"></div>
+<div class="aurora-blob blob-1"></div>
+<div class="aurora-blob blob-2"></div>
+<div class="grid-overlay"></div>
+
+<div class="auth-card-wrapper" onmousemove="tiltCard(event, this)" onmouseleave="resetTilt(this)" style="display:flex; justify-content:center; width: 100%; perspective: 1000px;">
+    <div class="auth-card">
+        <div class="text-center mb-4">
+            <i class="bi bi-person-badge-fill" style="font-size: 3.5rem; color: var(--accent-glow); filter: drop-shadow(0 0 15px rgba(0, 242, 255, 0.4));"></i>
+            <h2 class="fw-bold mt-2 mb-1">Employee Gateway</h2>
+            <p class="text-muted small">Access your personal asset tracker</p>
+        </div>
+
+    <div th:if="${param.error}" class="alert alert-error rounded-3 py-2 text-center small mb-4">
+        <i class="bi bi-exclamation-octagon me-1"></i> Invalid credentials or unverified account.
+    </div>
+
+    <!-- POST to the standard Spring Security /login endpoint -->
+    <form th:action="@{/login}" method="post">
+        <div class="mb-3">
+            <label for="username" class="form-label small text-uppercase text-muted fw-bold">Username</label>
+            <input type="text" id="username" name="username" class="form-control" required placeholder="Enter employee ID">
+        </div>
+
+        <div class="mb-4">
+            <label for="password" class="form-label small text-uppercase text-muted fw-bold">Password</label>
+            <input type="password" id="password" name="password" class="form-control" required placeholder="Enter password">
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">Authenticate Node</button>
+    </form>
+    
+    <div class="mt-4 pt-4 border-top" style="border-color: var(--border-glass) !important;">
+        <a th:href="@{/}" class="btn-glass-nav"><i class="bi bi-house-door"></i> Return to Home Core</a>
+        <a th:href="@{/employee/register}" class="btn-glass-nav"><i class="bi bi-person-plus"></i> Initialize Employee Node</a>
+        <a th:href="@{/login}" class="btn-glass-nav" style="margin-bottom: 0;"><i class="bi bi-shield-lock"></i> Switch to Admin Gateway</a>
+    </div>
+    </div>
+</div>
+
+<script>
+    function tiltCard(e, cardWrapper) {
+        const card = cardWrapper.querySelector('.auth-card');
+        const rect = cardWrapper.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const rotateX = ((y - centerY) / centerY) * -5;
+        const rotateY = ((x - centerX) / centerX) * 5;
+        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
+    }
+
+    function resetTilt(cardWrapper) {
+        cardWrapper.querySelector('.auth-card').style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale(1)';
+    }
+
+    const cursor = document.getElementById('cursor-glow');
+    if (cursor) {
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+    }
+</script>
+
+</body>
+</html>

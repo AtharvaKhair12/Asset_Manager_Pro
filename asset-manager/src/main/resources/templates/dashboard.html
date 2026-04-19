@@ -1,349 +1,555 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AssetManager Pro | Enterprise Dashboard</title>
+    <title>AssetManager Pro | Command Node</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <style>
-        /* --- THEME CORE VARIABLES --- */
-        :root {
-            --brand-blue: #004085;
-            --accent-light: #f1f8ff;
-            --success-green: #198754;
-            --danger-red: #dc3545;
-            --bg-body: #f4f7f6;
-            --bg-card: #ffffff;
-            --text-main: #212529;
-            --text-muted: #555555; /* Surgical Fix: Dark Grey Description */
-            --border-color: #dee2e6;
-            --nav-bg: #004085;
-            --accent-glow: #00f2ff;
-        }
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 
-        /* Stealth Mode Theme Overrides */
-        body.dark-mode {
-            --bg-body: #050505;
-            --bg-card: #161616;
-            --text-main: #e0e0e0;
-            --text-muted: #555555; /* Fixed: Remains Dark Grey for contrast */
-            --border-color: #2a2a2a;
-            --nav-bg: #000000;
+    <style>
+        :root {
+            --bg-deep: #050505;
             --accent-glow: #00f2ff;
-            --brand-blue: #00f2ff;
+            --accent-secondary: #004085;
+            --text-pure: #ffffff;
+            --text-bright: #f0f0f0;
+            --text-muted: #d1d5db;
+            --glass: rgba(255, 255, 255, 0.03);
+            --border-glass: rgba(255, 255, 255, 0.1);
+            --transition-pro: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
         }
 
         body {
-            background-color: var(--bg-body);
-            color: var(--text-main);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #050505;
+            color: var(--text-pure);
+            font-family: 'Inter', sans-serif;
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            transition: background 0.3s ease, color 0.3s ease;
+            overflow-x: hidden;
+            margin: 0;
+            perspective: 1000px;
+            cursor: default;
         }
 
-        .navbar {
-            background-color: var(--nav-bg) !important;
-            border-bottom: 2px solid var(--brand-blue);
-            transition: all 0.3s ease;
+        /* --- ENVIRONMENT FX --- */
+        .aurora-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -4; overflow: hidden; pointer-events: none; }
+        .aurora-blob { position: absolute; filter: blur(100px); opacity: 0.3; animation: drift 25s infinite alternate; }
+        .blob-1 { top: -20%; left: -20%; width: 60vw; height: 60vw; background: radial-gradient(circle, var(--accent-glow), transparent 60%); }
+        .blob-2 { bottom: -20%; right: -20%; width: 70vw; height: 70vw; background: radial-gradient(circle, var(--accent-secondary), transparent 60%); animation-duration: 40s; }
+        @keyframes drift { 0% { transform: translate(0, 0) rotate(0deg); } 100% { transform: translate(40px, 40px) rotate(5deg); } }
+
+        .grid-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+            background-size: 60px 60px; z-index: -3;
+            mask-image: radial-gradient(circle at center, black 40%, transparent 90%);
         }
 
-        /* Interactive Dashboard Cards */
-        .card {
-            border: 1px solid var(--border-color);
+        #cursor-glow {
+            position: fixed; width: 800px; height: 800px;
+            background: radial-gradient(circle, rgba(0, 242, 255, 0.1) 0%, transparent 60%);
+            border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%); z-index: -2; transition: opacity 0.3s; mix-blend-mode: screen;
+        }
+
+        /* --- FLOATING NAVBAR --- */
+        .navbar-floating {
+            background: rgba(10, 10, 10, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glass);
+            border-radius: 50px;
+            padding: 0.8rem 2rem;
+            position: sticky;
+            top: 20px;
+            z-index: 1000;
+            margin: 0 auto 30px auto;
+            width: 95%;
+            max-width: 1400px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+
+        .navbar-brand { font-weight: 800; color: var(--text-pure) !important; font-size: 1.1rem; letter-spacing: 0.5px; }
+
+        /* --- CARDS & GLASS --- */
+        .glass-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid var(--border-glass);
+            border-radius: 24px;
+            padding: 1.5rem;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+            transition: var(--transition-pro);
+            height: 100%;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(0, 242, 255, 0.3);
+            background: linear-gradient(145deg, rgba(0, 242, 255, 0.08) 0%, rgba(0, 0, 0, 0) 100%);
+        }
+
+        .card-title { font-weight: 700; color: var(--text-pure); margin-bottom: 0.5rem; }
+        .text-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-glow); opacity: 0.8; font-weight: 700; }
+
+        /* --- FORMS --- */
+        .form-control, .form-select {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-glass);
+            color: white;
+            padding: 12px 15px;
             border-radius: 12px;
-            transition: transform 0.2s, box-shadow 0.2s;
-            background-color: var(--bg-card);
-            color: var(--text-main);
+            transition: var(--transition-pro);
         }
-
-        .card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(0, 242, 255, 0.25) !important;
+        .form-control:focus, .form-select:focus {
+            background: rgba(0, 242, 255, 0.05);
             border-color: var(--accent-glow);
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.15);
+            color: white;
         }
+        ::placeholder { color: rgba(255,255,255,0.3); }
+        .form-label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
 
-        .text-dark { color: var(--text-main) !important; }
-        .text-muted { color: var(--text-muted) !important; }
-        .bg-light { background-color: rgba(255,255,255,0.05) !important; }
-        .table { color: var(--text-main); }
-        .table-light { --bs-table-bg: rgba(255,255,255,0.05); --bs-table-color: var(--text-main); }
-        .table-hover tbody tr:hover { background-color: var(--accent-light); color: #000; }
-        body.dark-mode .table-hover tbody tr:hover { background-color: #1f1f1f; color: var(--accent-glow); }
+        /* --- TABLE --- */
+        .table-glass {
+            --bs-table-bg: transparent;
+            --bs-table-color: var(--text-bright);
+            border-color: var(--border-glass);
+        }
+        .table-glass thead th {
+            background: rgba(255,255,255,0.05);
+            color: var(--accent-glow);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid var(--border-glass);
+        }
+        .table-glass tbody tr { transition: 0.3s; }
+        .table-glass tbody tr:hover { background: rgba(0, 242, 255, 0.05); }
+        .table-glass td { vertical-align: middle; border-bottom: 1px solid var(--border-glass); }
 
-        /* Status Badges & High-Intensity Alert Glow */
-        .status-badge { font-size: 0.75rem; padding: 4px 10px; border-radius: 50px; font-weight: 600; text-transform: uppercase; }
-        .badge-assigned { background-color: #d1e7dd; color: #0f5132; }
+        /* --- BADGES --- */
+        .status-badge { font-size: 0.7rem; padding: 6px 12px; border-radius: 50px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .badge-assigned { background: rgba(0, 255, 136, 0.15); color: #00ff88; border: 1px solid rgba(0, 255, 136, 0.3); }
+        .badge-available { background: rgba(0, 242, 255, 0.15); color: var(--accent-glow); border: 1px solid rgba(0, 242, 255, 0.3); }
 
-        /* PULSE RED REPAIR ALERT */
+        /* Red Pulse for Repair */
         .badge-repair {
-            background-color: #f8d7da;
-            color: #842029;
+            background: rgba(255, 77, 77, 0.15);
+            color: #ff4d4d;
+            border: 1px solid #ff4d4d;
             animation: pulse-red 1.5s infinite;
-            box-shadow: 0 0 5px rgba(220, 53, 69, 0.4);
         }
-
-        .badge-available { background-color: #cfe2ff; color: #084298; }
-
         @keyframes pulse-red {
-            0% { box-shadow: 0 0 0px rgba(220, 53, 69, 0); }
-            50% { box-shadow: 0 0 12px rgba(220, 53, 69, 0.6); }
-            100% { box-shadow: 0 0 0px rgba(220, 53, 69, 0); }
+            0% { box-shadow: 0 0 0px rgba(255, 77, 77, 0); }
+            50% { box-shadow: 0 0 10px rgba(255, 77, 77, 0.5); }
+            100% { box-shadow: 0 0 0px rgba(255, 77, 77, 0); }
         }
 
-        /* QR ICON HARD-LOCKED TO BLACK */
-        .qr-black-lock { color: #000000 !important; }
+        /* --- BUTTONS --- */
+        .btn-primary {
+            background: var(--accent-glow); color: #000; border: none; font-weight: 800;
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.2); transition: 0.3s;
+        }
+        .btn-primary:hover { background: #fff; box-shadow: 0 0 40px rgba(0, 242, 255, 0.5); transform: translateY(-2px); }
 
-        .content-wrapper { flex: 1 0 auto; }
-        footer { flex-shrink: 0; background: var(--bg-card); border-top: 1px solid var(--border-color); }
-        .stat-icon { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; }
+        .btn-action { background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass); color: var(--text-bright); transition: 0.3s; }
+        .btn-action:hover { background: var(--accent-glow); color: #000; border-color: var(--accent-glow); }
 
-        .form-check-input:checked { background-color: var(--brand-blue); border-color: var(--brand-blue); }
-        .modal-content { background-color: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color); }
-        .form-control, .form-select { background-color: var(--bg-body); border-color: var(--border-color); color: var(--text-main); }
-        .form-control:focus, .form-select:focus { background-color: var(--bg-body); color: var(--text-main); border-color: var(--brand-blue); box-shadow: 0 0 8px var(--brand-blue); }
+        /* QR Button specific - White button to allow black icon to show, but stylized */
+        .btn-qr { background: #e0e0e0; border: none; color: #000; }
+        .btn-qr:hover { background: #fff; box-shadow: 0 0 15px white; }
 
-        #qrImage { max-width: 200px; margin: 0 auto; display: block; }
+        /* --- MODAL --- */
+        .modal-content {
+            background: rgba(10, 10, 10, 0.9);
+            backdrop-filter: blur(30px);
+            border: 1px solid var(--border-glass);
+            color: var(--text-pure);
+        }
+        .modal-header { border-bottom: 1px solid var(--border-glass); }
+        .modal-footer { border-top: 1px solid var(--border-glass); }
+        .btn-close { filter: invert(1); }
+
+        /* QR Scanner Overrides */
+        #qr-reader {
+            border: none !important;
+            width: 100% !important;
+        }
+        #qr-reader video {
+            width: 100% !important;
+            border-radius: 12px !important;
+        }
+        #qr-reader a {
+            color: var(--accent-glow) !important;
+            text-decoration: underline !important;
+        }
+        #qr-reader button {
+            background: var(--accent-glow) !important;
+            color: #000 !important;
+            border: none !important;
+            padding: 8px 20px !important;
+            border-radius: 8px !important;
+            font-weight: 700 !important;
+            margin: 5px !important;
+            transition: 0.3s !important;
+        }
+        #qr-reader button:hover {
+            background: #fff !important;
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.4) !important;
+        }
+        #qr-reader select {
+            background: rgba(0, 0, 0, 0.5) !important;
+            color: white !important;
+            padding: 5px !important;
+            border: 1px solid var(--border-glass) !important;
+            border-radius: 5px !important;
+        }
     </style>
 </head>
-<body class="light-mode">
-<div class="content-wrapper">
-    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm py-3">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="/dashboard">
-                <i class="bi bi-shield-lock-fill me-2" style="color: var(--accent-glow)"></i>AssetManager <span class="fw-light">Pro</span>
-            </a>
+<body>
 
-            <div class="ms-auto d-flex align-items-center">
-                <div class="theme-switch-wrapper me-4">
-                    <div class="form-check form-switch mb-0">
-                        <input class="form-check-input" type="checkbox" id="stealthModeToggle">
-                        <label class="form-check-label text-light small" for="stealthModeToggle">
-                            <i class="bi bi-moon-stars-fill me-1"></i> Stealth Mode
-                        </label>
-                    </div>
-                </div>
+<div id="cursor-glow"></div>
+<div class="aurora-container"><div class="aurora-blob blob-1"></div><div class="aurora-blob blob-2"></div></div>
+<div class="grid-overlay"></div>
 
-                <span class="text-light me-3 small">
-                    <i class="bi bi-person-circle me-1"></i> Welcome, <strong th:text="${#authentication.name}">Admin</strong>
-                </span>
-                <a href="/logout" class="btn btn-outline-light btn-sm px-3 shadow-sm rounded-pill">Logout</a>
+<nav class="navbar navbar-expand-lg navbar-floating">
+    <div class="container-fluid">
+        <a class="navbar-brand d-flex align-items-center" href="/dashboard">
+            <i class="bi bi-shield-lock-fill me-2" style="color: var(--accent-glow);"></i>
+            AssetManager <span class="fw-light ms-1 opacity-75">Pro</span>
+        </a>
+
+        <div class="ms-auto d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center px-3 py-1 rounded-pill" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass);">
+                <i class="bi bi-person-circle me-2 text-accent" style="color: var(--accent-glow);"></i>
+                <span class="small fw-bold text-bright" th:text="${#authentication.name}">Admin</span>
             </div>
+
+            <a href="/logout" class="btn btn-sm btn-outline-light rounded-pill px-3 fw-bold" style="border-color: var(--border-glass);">Logout</a>
         </div>
-    </nav>
+    </div>
+</nav>
 
-    <div class="container mt-4">
+<div class="container-fluid px-4" style="max-width: 1400px;">
 
-        <div th:if="${message}" class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" style="border-left: 5px solid var(--success-green) !important;">
-            <i class="bi bi-check-circle-fill me-2"></i>
-            <strong th:text="${message}">Success!</strong>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
+    <div th:if="${message}" class="alert border-0 shadow-lg d-flex align-items-center" role="alert" style="background: rgba(0, 255, 136, 0.1); border-left: 4px solid #00ff88 !important; color: #00ff88;">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        <strong th:text="${message}">Success</strong>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
 
-        <div th:if="${not #lists.isEmpty(expiredAssets)}" class="alert alert-warning border-0 shadow-sm mb-4 p-3" style="border-left: 5px solid #ffc107 !important; background: rgba(255, 193, 7, 0.1); color: #856404;">
-            <div class="d-flex align-items-center">
-                <div class="bg-warning bg-opacity-10 p-2 rounded-circle me-3">
-                    <i class="bi bi-shield-exclamation text-warning fs-4"></i>
-                </div>
-                <div>
-                    <h6 class="mb-0 fw-bold">Lifecycle Alert: [[${#lists.size(expiredAssets)}]] Assets reached EOL</h6>
-                    <p class="small mb-0">Review hardware maintenance schedule.</p>
-                </div>
-                <button class="btn btn-sm btn-warning ms-auto fw-bold px-3 shadow-sm" data-bs-toggle="collapse" data-bs-target="#expiryDetails">
-                    View List
-                </button>
+    <div th:if="${not #lists.isEmpty(expiredAssets)}" class="alert border-0 shadow-lg p-3 mb-4" style="background: rgba(255, 193, 7, 0.1); border-left: 4px solid #ffc107 !important; color: #ffc107;">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-shield-exclamation fs-4 me-3"></i>
+            <div>
+                <h6 class="mb-0 fw-bold">Lifecycle Alert: [[${#lists.size(expiredAssets)}]] Assets reached EOL</h6>
+                <p class="small mb-0 opacity-75">Review maintenance schedule immediately.</p>
             </div>
-            <div class="collapse mt-3" id="expiryDetails">
-                <div class="list-group list-group-flush border-top pt-2">
-                    <div th:each="exp : ${expiredAssets}" class="list-group-item bg-transparent px-0 border-0 d-flex justify-content-between small">
-                        <span><i class="bi bi-dot"></i> <span th:text="${exp.assetName}"></span></span>
-                        <span class="font-monospace" th:text="'Acquired: ' + ${exp.purchaseDate}"></span>
-                    </div>
+            <button class="btn btn-sm btn-warning ms-auto fw-bold px-3 text-dark" data-bs-toggle="collapse" data-bs-target="#expiryDetails">View List</button>
+        </div>
+        <div class="collapse mt-3" id="expiryDetails">
+            <div class="list-group list-group-flush border-top border-warning border-opacity-25 pt-2">
+                <div th:each="exp : ${expiredAssets}" class="list-group-item bg-transparent px-0 border-0 d-flex justify-content-between small text-light">
+                    <span><i class="bi bi-dot text-warning"></i> <span th:text="${exp.assetName}"></span></span>
+                    <span class="font-monospace opacity-75" th:text="'Acquired: ' + ${exp.purchaseDate}"></span>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="row mb-4">
-            <div class="col-md-12">
-                <div class="card shadow-sm p-4">
-                    <div class="row align-items-center">
-                        <div class="col-lg-5">
-                            <h4 class="mb-1 fw-bold">Inventory Control Center</h4>
-                            <p class="text-muted small mb-0">Professional resource tracking & maintenance audit.</p>
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="glass-card d-flex flex-wrap align-items-center justify-content-between p-4">
+                <div class="mb-3 mb-lg-0">
+                    <h4 class="fw-bold mb-1">Command Center</h4>
+                    <p class="text-muted small mb-0">Resource tracking & maintenance audit logs.</p>
+                </div>
+                <div class="d-flex gap-2" style="min-width: 50%;">
+                    <form th:action="@{/dashboard/search}" method="get" class="flex-grow-1">
+                        <div class="input-group">
+                            <span class="input-group-text border-0 text-white" style="background: rgba(255,255,255,0.1);"><i class="bi bi-search"></i></span>
+                            <input type="text" name="keyword" class="form-control border-0 ps-2" style="background: rgba(255,255,255,0.05);" placeholder="Search nodes..." required>
+                            <button type="submit" class="btn btn-primary px-4">Search</button>
+                            <button type="button" class="btn btn-outline-info px-3" onclick="startScanner()" title="Activate Scanner"><i class="bi bi-camera"></i></button>
+                            <a th:href="@{/dashboard}" class="btn btn-outline-light d-flex align-items-center" title="Reset"><i class="bi bi-arrow-clockwise"></i></a>
                         </div>
-                        <div class="col-lg-7 mt-3 mt-lg-0 d-flex gap-2">
-                            <form th:action="@{/dashboard/search}" method="get" class="flex-grow-1">
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
-                                    <input type="text" name="keyword" class="form-control border-start-0 ps-0" placeholder="Filter nodes..." required>
-                                    <button type="submit" class="btn btn-primary px-4">Filter</button>
-                                    <a th:href="@{/dashboard}" class="btn btn-outline-secondary px-3 ms-1 d-flex align-items-center" title="Reset Matrix">
-                                        <i class="bi bi-arrow-clockwise"></i>
-                                    </a>
-                                </div>
-                            </form>
-                            <a th:href="@{/dashboard/export}" class="btn btn-success d-flex align-items-center gap-2 shadow-sm px-3">
-                                <i class="bi bi-file-earmark-spreadsheet"></i> <span>Export</span>
-                            </a>
-                        </div>
-                    </div>
+                    </form>
+                    <a th:href="@{/dashboard/export}" class="btn btn-success d-flex align-items-center gap-2 px-3 fw-bold" style="background: #198754; border: none;">
+                        <i class="bi bi-file-earmark-spreadsheet"></i> <span>Export</span>
+                    </a>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="row g-3 mb-4 text-center">
-            <div class="col-md-4">
-                <div class="card shadow-sm p-3">
-                    <div class="d-flex align-items-center justify-content-center">
-                        <div class="stat-icon bg-primary bg-opacity-10 rounded-circle text-primary me-3">
-                            <i class="bi bi-pc-display fs-4"></i>
-                        </div>
-                        <div class="text-start">
-                            <h6 class="text-muted small mb-0">Hardware Items</h6>
-                            <h4 class="fw-bold mb-0" th:text="${hwCount}">0</h4>
-                        </div>
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="glass-card-wrapper" onmousemove="tiltCard(event, this)" onmouseleave="resetTilt(this)">
+                <div class="glass-card d-flex align-items-center justify-content-between p-4">
+                    <div>
+                        <span class="text-label">Hardware Nodes</span>
+                        <h2 id="hwCount" class="fw-bold display-5 mb-0 mt-1" th:text="${hwCount}">0</h2>
                     </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card shadow-sm p-3">
-                    <div class="d-flex align-items-center justify-content-center">
-                        <div class="stat-icon bg-success bg-opacity-10 rounded-circle text-success me-3">
-                            <i class="bi bi-cloud-check fs-4"></i>
-                        </div>
-                        <div class="text-start">
-                            <h6 class="text-muted small mb-0">Active Software</h6>
-                            <h4 class="fw-bold mb-0" th:text="${swCount}">0</h4>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card shadow-sm p-3 border-danger border-opacity-25">
-                    <div class="d-flex align-items-center justify-content-center">
-                        <div class="stat-icon bg-danger bg-opacity-10 rounded-circle text-danger me-3">
-                            <i class="bi bi-exclamation-triangle fs-4"></i>
-                        </div>
-                        <div class="text-start">
-                            <h6 class="text-muted small mb-0 text-danger">Repair Needed</h6>
-                            <h4 class="fw-bold mb-0 text-danger" th:text="${repairCount}">0</h4>
-                        </div>
-                    </div>
+                    <i class="bi bi-cpu display-4" style="color: var(--accent-glow); filter: drop-shadow(0 0 15px var(--accent-glow));"></i>
                 </div>
             </div>
         </div>
-
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="card shadow-sm sticky-top" style="top: 20px;">
-                    <div class="card-header bg-light py-3 border-0">
-                        <h6 class="mb-0 fw-bold text-primary"><i class="bi bi-plus-square-dotted me-2"></i>New Registration</h6>
+        <div class="col-md-4">
+            <div class="glass-card-wrapper" onmousemove="tiltCard(event, this)" onmouseleave="resetTilt(this)">
+                <div class="glass-card d-flex align-items-center justify-content-between p-4">
+                    <div>
+                        <span class="text-label" style="color: #00ff88;">Software Units</span>
+                        <h2 id="swCount" class="fw-bold display-5 mb-0 mt-1" th:text="${swCount}">0</h2>
                     </div>
-                    <div class="card-body">
-                        <form th:action="@{/add-asset}" th:object="${newAsset}" method="post">
-                            <div class="mb-3">
-                                <label class="form-label small fw-bold">Asset Name</label>
-                                <input type="text" th:field="*{assetName}" class="form-control" placeholder="Device Label" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label small fw-bold">Serial Number</label>
-                                <input type="text" th:field="*{serialNumber}" class="form-control" placeholder="Unique S/N" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label small fw-bold">Bill Description</label>
-                                <textarea th:field="*{billDescription}" class="form-control" rows="2" placeholder="Warranty/Purchaser details"></textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label small fw-bold">Purchase Date</label>
-                                <input type="date" th:field="*{purchaseDate}" class="form-control" required>
-                            </div>
-                            <div class="row mb-3 g-2">
-                                <div class="col-6">
-                                    <label class="form-label small fw-bold">Category</label>
-                                    <select th:field="*{category}" class="form-select">
-                                        <option value="Hardware">Hardware</option>
-                                        <option value="Software">Software</option>
-                                        <option value="Peripheral">Peripheral</option>
-                                    </select>
-                                </div>
-                                <div class="col-6">
-                                    <label class="form-label small fw-bold">Status</label>
-                                    <select th:field="*{status}" class="form-select">
-                                        <option value="Available">Available</option>
-                                        <option value="Assigned">Assigned</option>
-                                        <option value="In Repair">In Repair</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm">Confirm Asset</button>
-                        </form>
-                    </div>
+                    <i class="bi bi-code-square display-4" style="color: #00ff88; filter: drop-shadow(0 0 15px #00ff88);"></i>
                 </div>
             </div>
+        </div>
+        <div class="col-md-4">
+            <div class="glass-card-wrapper" onmousemove="tiltCard(event, this)" onmouseleave="resetTilt(this)">
+                <div class="glass-card d-flex align-items-center justify-content-between p-4" style="border-color: rgba(255,77,77,0.3);">
+                    <div>
+                        <span class="text-label" style="color: #ff4d4d;">Critical Repair</span>
+                        <h2 id="repairCount" class="fw-bold display-5 mb-0 mt-1 text-danger" th:text="${repairCount}">0</h2>
+                    </div>
+                    <i class="bi bi-exclamation-triangle display-4" style="color: #ff4d4d; filter: drop-shadow(0 0 15px #ff4d4d);"></i>
+                </div>
+            </div>
+        </div>
+    </div>
 
-            <div class="col-md-8">
-                <div class="card shadow-sm overflow-hidden">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light text-muted">
-                            <tr>
-                                <th class="ps-4">Profile</th>
-                                <th>Serial ID</th>
-                                <th>Condition</th>
-                                <th class="text-end pe-4">Actions</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr th:each="asset : ${assets}">
-                                <td class="ps-4">
-                                    <div class="d-flex align-items-center">
-                                        <div class="bg-primary bg-opacity-10 p-2 rounded text-primary me-3">
-                                            <i class="bi bi-laptop" th:if="${asset.category != null and #strings.containsIgnoreCase(asset.category, 'Hardware')}"></i>
-                                            <i class="bi bi-code-square" th:if="${asset.category != null and #strings.containsIgnoreCase(asset.category, 'Software')}"></i>
-                                            <i class="bi bi-box-seam" th:if="${asset.category == null}"></i>
-                                        </div>
-                                        <div>
-                                            <div class="fw-bold mb-0" th:text="${asset.assetName}"></div>
-                                            <div class="small text-muted" th:text="${#strings.abbreviate(asset.billDescription, 35)}"></div>
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="glass-card">
+                <div class="mb-4 pb-2 border-bottom border-white border-opacity-10">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-plus-square-dotted me-2 text-primary" style="color: var(--accent-glow) !important;"></i>Initialize Node</h5>
+                </div>
+                <form th:action="@{/add-asset}" th:object="${newAsset}" method="post">
+                    <div class="mb-3">
+                        <label class="form-label">Asset Name</label>
+                        <input type="text" th:field="*{assetName}" class="form-control" placeholder="Device Label" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Serial Number</label>
+                        <input type="text" th:field="*{serialNumber}" class="form-control" placeholder="Unique S/N" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Bill Description</label>
+                        <textarea th:field="*{billDescription}" class="form-control" rows="2" placeholder="Warranty/Purchaser details"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Purchase Date</label>
+                        <input type="date" th:field="*{purchaseDate}" class="form-control" required>
+                    </div>
+                    <div class="row mb-3 g-2">
+                        <div class="col-6">
+                            <label class="form-label">Category</label>
+                            <select th:field="*{category}" class="form-select">
+                                <option value="Hardware">Hardware</option>
+                                <option value="Software">Software</option>
+                                <option value="Peripheral">Peripheral</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Status</label>
+                            <select th:field="*{status}" class="form-select">
+                                <option value="Available">Available</option>
+                                <option value="Assigned">Assigned</option>
+                                <option value="In Repair">In Repair</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3 g-2">
+                        <div class="col-4">
+                            <label class="form-label">Purchase Price ($)</label>
+                            <input type="number" step="0.01" th:field="*{purchasePrice}" class="form-control" placeholder="1000.00" required>
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label">Salvage Value ($)</label>
+                            <input type="number" step="0.01" th:field="*{salvageValue}" class="form-control" placeholder="100.00" required>
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label">Lifespan (Mo)</label>
+                            <input type="number" th:field="*{lifespanMonths}" class="form-control" placeholder="36" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Assign To Employee</label>
+                        <select name="assignedEmployeeId" class="form-select">
+                            <option value="">-- Unassigned --</option>
+                            <option th:each="emp : ${employees}" th:value="${emp.id}" th:text="${emp.fullName} + ' (' + ${emp.username} + ')'"></option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 py-3 mt-2">CONFIRM ASSET</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="glass-card p-0 overflow-hidden">
+                <div class="table-responsive">
+                    <table class="table table-glass align-middle mb-0">
+                        <thead>
+                        <tr>
+                            <th class="ps-4 py-3">Profile</th>
+                            <th class="py-3">Serial ID</th>
+                            <th class="py-3">Condition</th>
+                            <th class="text-end pe-4 py-3">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="asset : ${assets}">
+                            <td class="ps-4 py-3">
+                                <div class="d-flex align-items-center">
+                                    <div th:if="${asset.imageUrl == null}" class="p-2 rounded me-3 d-flex align-items-center justify-content-center" style="background: rgba(0, 242, 255, 0.1); width: 48px; height: 48px;">
+                                        <i class="bi bi-laptop text-info" th:if="${asset.category != null and #strings.containsIgnoreCase(asset.category, 'Hardware')}" style="color: var(--accent-glow) !important; font-size: 1.5rem;"></i>
+                                        <i class="bi bi-code-square text-info" th:if="${asset.category != null and #strings.containsIgnoreCase(asset.category, 'Software')}" style="color: var(--accent-glow) !important; font-size: 1.5rem;"></i>
+                                        <i class="bi bi-box-seam text-info" th:if="${asset.category == null || #strings.containsIgnoreCase(asset.category, 'Peripheral')}" style="color: var(--accent-glow) !important; font-size: 1.5rem;"></i>
+                                    </div>
+                                    <img th:if="${asset.imageUrl != null}" th:src="${asset.imageUrl}" class="rounded me-3" style="width: 58px; height: 58px; object-fit: cover; box-shadow: 0 4px 10px rgba(0,242,255,0.2);">
+                                    <div>
+                                        <div class="fw-bold text-white mb-0" th:text="${asset.assetName}"></div>
+                                        <div class="small text-muted" th:text="${#strings.abbreviate(asset.billDescription, 35)}"></div>
+                                        <div class="small mt-1" th:if="${asset.assignedEmployee != null}" style="color: rgba(0, 255, 136, 0.8);">
+                                            <i class="bi bi-person-badge me-1"></i> <span th:text="${asset.assignedEmployee.fullName}"></span>
                                         </div>
                                     </div>
+                                </div>
+                            </td>
+                            <td class="small" style="color: var(--accent-glow);">
+                                <span class="font-monospace" th:text="${asset.serialNumber}"></span><br>
+                                <span class="text-white fw-bold d-inline-block mt-1" th:if="${asset.currentValue != null}" th:text="'Val: $' + ${#numbers.formatDecimal(asset.currentValue, 1, 2)}"></span>
+                            </td>
+                            <td>
+                                <span class="status-badge"
+                                      th:classappend="${asset.status == 'Assigned' ? 'badge-assigned' : (asset.status == 'In Repair' ? 'badge-repair' : 'badge-available')}"
+                                      th:text="${asset.status}">Status</span>
+                                <div class="mt-2" th:if="${asset.healthStatus != 'OPTIMAL'}">
+                                     <span class="badge" 
+                                           th:classappend="${asset.healthStatus == 'AT RISK' ? 'bg-danger text-white' : 'bg-warning text-dark'}" 
+                                           th:text="${asset.healthStatus} + ' (Repairs: ' + ${asset.repairCount} + ')'"
+                                           style="font-size: 0.70rem; letter-spacing: 0.5px; box-shadow: 0 0 10px rgba(255,0,0,0.4);">
+                                     </span>
+                                </div>
+                            </td>
+                            <td class="text-end pe-4">
+                                <button class="btn btn-sm btn-qr rounded-circle me-1" style="width: 32px; height: 32px;"
+                                        th:data-qr="${asset.qrCodeBase64}"
+                                        th:data-name="${asset.assetName}"
+                                        onclick="handleQRClick(this)"
+                                        title="View QR Label">
+                                    <i class="bi bi-qr-code"></i>
+                                </button>
+
+                                <button class="btn btn-sm btn-action rounded-circle me-1" style="width: 32px; height: 32px;"
+                                        th:data-id="${asset.id}"
+                                        th:data-name="${asset.assetName}"
+                                        th:data-serial="${asset.serialNumber}"
+                                        th:data-purchaseDate="${asset.purchaseDate}"
+                                        th:data-status="${asset.status}"
+                                        th:data-desc="${asset.billDescription}"
+                                        th:data-purchasePrice="${asset.purchasePrice}"
+                                        th:data-salvageValue="${asset.salvageValue}"
+                                        th:data-lifespan="${asset.lifespanMonths}"
+                                        th:data-employeeId="${asset.assignedEmployee != null ? asset.assignedEmployee.id : ''}"
+                                        onclick="openEditModal(this)">
+                                    <i class="bi bi-pencil-fill" style="font-size: 0.8rem;"></i>
+                                </button>
+
+                                <a th:href="@{/delete-asset/{id}(id=${asset.id})}" class="btn btn-sm btn-action rounded-circle" style="width: 32px; height: 32px;" onclick="return confirm('Purge audit node?')">
+                                    <i class="bi bi-trash3-fill text-danger" style="font-size: 0.8rem;"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PHASE 6: MAINTENANCE & EOL SCHEDULE -->
+    <div class="row g-4 mt-2 mb-4">
+        <div class="col-lg-12">
+            <div class="glass-card">
+                <div class="mb-4 pb-2 border-bottom border-white border-opacity-10 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-wrench-adjustable-circle me-2" style="color: #ffc107;"></i>Proactive Maintenance & EOL Schedule</h5>
+                    <span class="badge" style="background: rgba(255, 193, 7, 0.15); color: #ffc107; border: 1px solid rgba(255, 193, 7, 0.3);">
+                        <i class="bi bi-shield-exclamation me-1"></i> Action Required
+                    </span>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-glass align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th class="ps-4 py-3">Urgency</th>
+                                <th class="py-3">Node Label</th>
+                                <th class="py-3">Serial Signature</th>
+                                <th class="py-3">Assignment</th>
+                                <th class="text-end pe-4 py-3">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Iterate over IN REPAIR -->
+                            <tr th:each="asset : ${inRepairAssets}">
+                                <td class="ps-4">
+                                    <span class="badge badge-repair">
+                                        <i class="bi bi-tools me-1"></i> Pending Repair
+                                    </span>
                                 </td>
-                                <td class="font-monospace small text-info" th:text="${asset.serialNumber}"></td>
                                 <td>
-                                    <span class="status-badge"
-                                          th:classappend="${asset.status == 'Assigned' ? 'badge-assigned' : (asset.status == 'In Repair' ? 'badge-repair' : 'badge-available')}"
-                                          th:text="${asset.status}">Status</span>
+                                    <div class="fw-bold text-white mb-0" th:text="${asset.assetName}"></div>
+                                    <div class="small text-muted" th:text="${asset.category}"></div>
                                 </td>
+                                <td class="font-monospace small" style="color: var(--accent-glow);" th:text="${asset.serialNumber}"></td>
+                                <td class="small" th:text="${asset.assignedEmployee != null ? asset.assignedEmployee.fullName : 'Unassigned'}"></td>
                                 <td class="text-end pe-4">
-                                    <button class="btn btn-sm btn-light border me-1 bg-opacity-10"
-                                            th:data-qr="${asset.qrCodeBase64}"
-                                            th:data-name="${asset.assetName}"
-                                            onclick="handleQRClick(this)"
-                                            title="View QR Label">
-                                        <i class="bi bi-qr-code qr-black-lock"></i>
+                                    <button class="btn btn-sm btn-action rounded-circle" style="width: 32px; height: 32px;"
+                                        th:data-id="${asset.id}" th:data-name="${asset.assetName}" th:data-serial="${asset.serialNumber}" th:data-desc="${asset.billDescription}" th:data-status="${asset.status}" th:data-purchaseDate="${asset.purchaseDate}" th:data-employeeId="${asset.assignedEmployee != null ? asset.assignedEmployee.id : ''}"
+                                        onclick="openEditModal(this)">
+                                        <i class="bi bi-arrow-right-short" style="font-size: 1.2rem; margin-left: -2px;"></i>
                                     </button>
-
-                                    <button class="btn btn-sm btn-light border me-1 bg-opacity-10"
-                                            th:data-id="${asset.id}"
-                                            th:data-name="${asset.assetName}"
-                                            th:data-serial="${asset.serialNumber}"
-                                            th:data-purchaseDate="${asset.purchaseDate}"
-                                            th:data-status="${asset.status}"
-                                            th:data-desc="${asset.billDescription}"
-                                            onclick="openEditModal(this)">
-                                        <i class="bi bi-pencil-square text-primary"></i>
-                                    </button>
-
-                                    <a th:href="@{/delete-asset/{id}(id=${asset.id})}" class="btn btn-sm btn-light border bg-opacity-10" onclick="return confirm('Purge audit node?')">
-                                        <i class="bi bi-trash3 text-danger"></i>
-                                    </a>
                                 </td>
                             </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                            
+                            <!-- Iterate over EXPIRED -->
+                            <tr th:each="asset : ${expiredAssets}">
+                                <td class="ps-4">
+                                    <span class="badge" style="background: rgba(255, 193, 7, 0.15); color: #ffc107; border: 1px solid rgba(255, 193, 7, 0.3);">
+                                        <i class="bi bi-hourglass-bottom me-1"></i> EOL Reached
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="fw-bold text-white mb-0" th:text="${asset.assetName}"></div>
+                                    <div class="small text-muted" th:text="'Purchased: ' + ${asset.purchaseDate}"></div>
+                                </td>
+                                <td class="font-monospace small" style="color: var(--accent-glow);" th:text="${asset.serialNumber}"></td>
+                                <td class="small" th:text="${asset.assignedEmployee != null ? asset.assignedEmployee.fullName : 'Unassigned'}"></td>
+                                <td class="text-end pe-4">
+                                    <button class="btn btn-sm btn-action rounded-circle" style="width: 32px; height: 32px;"
+                                        th:data-id="${asset.id}" th:data-name="${asset.assetName}" th:data-serial="${asset.serialNumber}" th:data-desc="${asset.billDescription}" th:data-status="${asset.status}" th:data-purchaseDate="${asset.purchaseDate}" th:data-employeeId="${asset.assignedEmployee != null ? asset.assignedEmployee.id : ''}"
+                                        onclick="openEditModal(this)">
+                                        <i class="bi bi-arrow-right-short" style="font-size: 1.2rem; margin-left: -2px;"></i>
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <!-- Empty State -->
+                            <tr th:if="${#lists.isEmpty(inRepairAssets) and #lists.isEmpty(expiredAssets)}">
+                                <td colspan="5" class="text-center py-5 text-muted small">
+                                    <i class="bi bi-check2-circle display-4 d-block mb-3 text-success" style="color: #00ff88 !important; opacity: 0.6;"></i>
+                                    All nodes are operating securely within standard lifecycle constraints.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -351,26 +557,26 @@
 </div>
 
 <div class="modal fade" id="editAssetModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-scrollable" style="margin-top: 2rem;">
         <div class="modal-content">
             <form th:action="@{/update-asset}" method="post">
-                <div class="modal-header border-0">
-                    <h5 class="modal-title fw-bold">Modify Node Details</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="editModalTitleLabel">Modify Node Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="editId" name="id">
                     <div class="mb-3">
-                        <label class="form-label small fw-bold">Asset Label</label>
+                        <label class="form-label">Asset Label</label>
                         <input type="text" id="editName" name="assetName" class="form-control" required>
                     </div>
                     <div class="row mb-3">
                         <div class="col-6">
-                            <label class="form-label small fw-bold">Serial Code</label>
+                            <label class="form-label">Serial Code</label>
                             <input type="text" id="editSerial" name="serialNumber" class="form-control" required>
                         </div>
                         <div class="col-6">
-                            <label class="small fw-bold">Status</label>
+                            <label class="form-label">Status</label>
                             <select id="editStatus" name="status" class="form-select">
                                 <option value="Available">Available</option>
                                 <option value="Assigned">Assigned</option>
@@ -379,71 +585,314 @@
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label small fw-bold">Description</label>
+                        <label class="form-label">Assign To Employee</label>
+                        <select id="editAssignedEmployeeId" name="assignedEmployeeId" class="form-select">
+                            <option value="">-- Unassigned --</option>
+                            <option th:each="emp : ${employees}" th:value="${emp.id}" th:text="${emp.fullName} + ' (' + ${emp.username} + ')'"></option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
                         <textarea id="editDesc" name="billDescription" class="form-control" rows="3"></textarea>
                     </div>
                     <div class="mb-3">
-                        <label class="small fw-bold">Purchase Date</label>
-                        <input type="date" id="editPurchaseDate" name="purchaseDate" class="form-control">
+                        <label class="form-label">Purchase Date</label>
+                        <input type="date" id="editPurchaseDate" name="purchaseDate" class="form-control" required>
+                    </div>
+                    <div class="row mb-3 g-2">
+                        <div class="col-4">
+                            <label class="form-label">Purchase Price ($)</label>
+                            <input type="number" step="0.01" id="editPurchasePrice" name="purchasePrice" class="form-control" required>
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label">Salvage Value ($)</label>
+                            <input type="number" step="0.01" id="editSalvageValue" name="salvageValue" class="form-control" required>
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label">Lifespan (Mo)</label>
+                            <input type="number" id="editLifespan" name="lifespanMonths" class="form-control" required>
+                        </div>
                     </div>
                 </div>
-                <div class="modal-footer border-0">
-                    <button type="submit" class="btn btn-primary w-100 fw-bold">Commit Audit Changes</button>
+                <div class="modal-footer d-flex gap-2">
+                    <button type="button" class="btn btn-outline-light flex-grow-1" onclick="viewHistory()">View History</button>
+                    <button type="submit" class="btn btn-primary flex-grow-1">COMMIT CHANGES</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="qrModal" tabindex="-1">
-    <div class="modal-dialog modal-sm modal-dialog-centered">
-        <div class="modal-content text-center p-4 border-0 shadow-lg">
-            <h6 class="fw-bold text-dark mb-3" id="qrTitle">QR Node Label</h6>
-            <div class="bg-white p-3 rounded-4 shadow-sm mb-3">
-                <img id="qrImage" src="" class="img-fluid" alt="QR Label">
+<div class="modal fade" id="historyModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-scrollable" style="margin-top: 2rem;">
+        <div class="modal-content border-0">
+            <div class="modal-header border-bottom border-white border-opacity-10">
+                <h5 class="modal-title fw-bold"><i class="bi bi-clock-history me-2" style="color:var(--accent-glow);"></i>Audit Trail</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <p class="small text-muted mb-0">Authorized Node Identifier</p>
-            <button type="button" class="btn btn-outline-secondary btn-sm mt-3 w-100" data-bs-dismiss="modal">Close</button>
+            <div class="modal-body p-4">
+                <div id="historyLoading" class="text-center py-4 d-none">
+                    <div class="spinner-border" style="color:var(--accent-glow);" role="status"></div>
+                </div>
+                <div id="historyTimeline">
+                    <!-- Logs injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="cameraScannerModal" tabindex="-1">
+    <div class="modal-dialog modal-lg" style="margin-top: 2rem;">
+        <div class="modal-content border-0">
+            <div class="modal-header border-bottom border-white border-opacity-10">
+                <h5 class="modal-title fw-bold"><i class="bi bi-camera-video me-2" style="color:var(--accent-glow);"></i>Scan Hardware Node</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <div id="qr-reader" style="width:100%; border-radius: 12px; background: rgba(0,0,0,0.4); padding: 20px;"></div>
+                <p class="small text-muted mt-4 mb-0">Position the physical QR label within the frame or request camera access above.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="qrModal" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-scrollable" style="margin-top: 5rem;">
+        <div class="modal-content border-0">
+            <div class="modal-body text-center p-4">
+                <h6 class="fw-bold text-white mb-3" id="qrTitle">Node Identifier</h6>
+                <div class="bg-white p-3 rounded-4 shadow-lg mb-3">
+                    <img id="qrImage" src="" class="img-fluid" alt="QR Label" style="min-width: 150px;">
+                </div>
+                <p class="small text-muted mb-0">Authorized Node Identifier</p>
+                <button type="button" class="btn btn-outline-light btn-sm mt-3 w-100" data-bs-dismiss="modal">Close</button>
+            </div>
         </div>
     </div>
 </div>
 
 <footer class="mt-auto py-5 text-center border-top border-secondary border-opacity-10 opacity-75">
-    <div class="container">
-        <div class="mb-1 fw-bold">AssetManager <span class="text-primary fw-light">PRO EDITION</span></div>
-        <p class="small mb-0">&copy; 2026 Enterprise Solutions Group. Precision Tracking Suite.</p>
-    </div>
+    <p class="small mb-0 text-muted">&copy; 2026 AssetManager Pro. Precision Tracking Suite.</p>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    // THEME PERSISTENCE ENGINE
-    const toggle = document.getElementById('stealthModeToggle');
-    const body = document.body;
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.0/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 
-    if (localStorage.getItem('theme') === 'dark') {
-        body.classList.add('dark-mode');
-        toggle.checked = true;
+<script th:inline="javascript">
+    // --- STOMP WEBSOCKETS LOGIC (Phase 4) ---
+    var stompClient = null;
+
+    function connectWebSocket() {
+        var socket = new SockJS('/ws-asset-matrix');
+        stompClient = Stomp.over(socket);
+        stompClient.debug = null; // Disable debug logging in console
+        stompClient.connect({}, function (frame) {
+            stompClient.subscribe('/topic/dashboard-stats', function (message) {
+                var stats = JSON.parse(message.body);
+                updateMatrixValue('hwCount', stats.hwCount);
+                updateMatrixValue('swCount', stats.swCount);
+                updateMatrixValue('repairCount', stats.repairCount);
+            });
+        });
     }
 
-    toggle.addEventListener('change', () => {
-        if (toggle.checked) {
-            body.classList.add('dark-mode');
-            localStorage.setItem('theme', 'dark');
-        } else {
-            body.classList.remove('dark-mode');
-            localStorage.setItem('theme', 'light');
+    function updateMatrixValue(elementId, newValue) {
+        var el = document.getElementById(elementId);
+        if (el && el.innerText != newValue) {
+            el.innerText = newValue;
+            // Add a brief glow effect to show it updated in real-time
+            el.style.transition = 'text-shadow 0.2s, transform 0.2s';
+            el.style.textShadow = '0 0 20px #fff';
+            el.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+                el.style.textShadow = '';
+                el.style.transform = 'scale(1)';
+            }, 300);
+        }
+    }
+
+    // Connect on load
+    connectWebSocket();
+
+    // 3D TILT LOGIC
+    function tiltCard(e, cardWrapper) {
+        const card = cardWrapper.querySelector('.glass-card');
+        const rect = cardWrapper.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const rotateX = ((y - centerY) / centerY) * -5;
+        const rotateY = ((x - centerX) / centerX) * 5;
+        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
+    }
+
+    function resetTilt(cardWrapper) {
+        cardWrapper.querySelector('.glass-card').style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale(1)';
+    }
+
+    // CURSOR GLOW
+    const cursor = document.getElementById('cursor-glow');
+    document.addEventListener('mousemove', (e) => {
+        cursor.style.left = e.clientX + 'px';
+        cursor.style.top = e.clientY + 'px';
+    });
+
+    // --- HTML5 QR SCANNER LOGIC ---
+    let html5QrcodeScanner;
+
+    function startScanner() {
+        let modal = new bootstrap.Modal(document.getElementById('cameraScannerModal'));
+        modal.show();
+        
+        // Slight delay to allow modal to render before hooking the DOM element
+        setTimeout(() => {
+            if (!html5QrcodeScanner) {
+                html5QrcodeScanner = new Html5QrcodeScanner(
+                    "qr-reader", { fps: 10, qrbox: {width: 250, height: 250} }, false);
+                html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+            }
+        }, 300);
+    }
+
+    function stopScanner() {
+        if (html5QrcodeScanner) {
+            html5QrcodeScanner.clear().catch(error => {
+                console.error("Failed to clear html5QrcodeScanner. ", error);
+            });
+            html5QrcodeScanner = null;
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        let scannerModalEl = document.getElementById('cameraScannerModal');
+        if (scannerModalEl) {
+            scannerModalEl.addEventListener('hidden.bs.modal', function () {
+                stopScanner();
+            });
         }
     });
 
-    // MODAL & HANDLER LOGIC
+    function onScanSuccess(decodedText, decodedResult) {
+        if (decodedText.includes('/public/asset/')) {
+            const assetId = decodedText.split('/public/asset/')[1];
+            
+            stopScanner();
+            let scannerModalInstance = bootstrap.Modal.getInstance(document.getElementById('cameraScannerModal'));
+            if (scannerModalInstance) scannerModalInstance.hide();
+            
+            fetch('/public/api/asset/' + assetId)
+                .then(res => res.json())
+                .then(asset => {
+                    // Bulletproof guard: if Spring Boot routes to an error page that happens to return JSON
+                    if (asset.error || asset.status === 404 || asset.status === 500) {
+                        alert("Server Exception: " + (asset.message || asset.error || "Failed to locate node."));
+                        return;
+                    }
+                    if (asset.assetName === undefined) {
+                        alert("Corrupted data packet received from server.");
+                        return;
+                    }
+
+                    document.getElementById('editId').value = asset.id;
+                    document.getElementById('editName').value = asset.assetName;
+                    document.getElementById('editSerial').value = asset.serialNumber;
+                    document.getElementById('editDesc').value = asset.billDescription;
+                    document.getElementById('editStatus').value = asset.status;
+                    document.getElementById('editPurchaseDate').value = asset.purchaseDate;
+                    if(asset.assignedEmployee && asset.assignedEmployee.id) {
+                        document.getElementById('editAssignedEmployeeId').value = asset.assignedEmployee.id;
+                    } else {
+                        document.getElementById('editAssignedEmployeeId').value = "";
+                    }
+                    
+                    // Update Modal Title dynamically
+                    const titleEl = document.getElementById('editModalTitleLabel');
+                    if (titleEl) {
+                        titleEl.innerHTML = '<i class="bi bi-pencil-square me-2" style="color:var(--accent-glow);"></i>Updating: <span class="text-white">' + asset.assetName + '</span>';
+                    }
+
+                    new bootstrap.Modal(document.getElementById('editAssetModal')).show();
+                })
+                .catch(err => alert("Error: Asset not found or network issue."));
+        } else {
+             alert("Invalid Authorized QR tag format scanned: " + decodedText);
+             stopScanner();
+             let scannerModalInstance = bootstrap.Modal.getInstance(document.getElementById('cameraScannerModal'));
+             if (scannerModalInstance) scannerModalInstance.hide();
+        }
+    }
+
+    function onScanFailure(error) { 
+        // ignore standard frame failures 
+    }
+
+    // HANDLERS
     function handleQRClick(button) {
         const base64 = button.getAttribute('data-qr');
         const name = button.getAttribute('data-name');
         document.getElementById('qrImage').src = 'data:image/png;base64,' + base64;
-        document.getElementById('qrTitle').innerText = name + " Node";
+        document.getElementById('qrTitle').innerText = name;
         new bootstrap.Modal(document.getElementById('qrModal')).show();
     }
+
+    function viewHistory() {
+        const id = document.getElementById('editId').value;
+        if (!id) return;
+        
+        let editModalEl = document.getElementById('editAssetModal');
+        let editModal = bootstrap.Modal.getInstance(editModalEl);
+        if (editModal) editModal.hide();
+        
+        let historyModal = new bootstrap.Modal(document.getElementById('historyModal'));
+        historyModal.show();
+        
+        document.getElementById('historyLoading').classList.remove('d-none');
+        document.getElementById('historyTimeline').innerHTML = '';
+        
+        fetch('/public/api/asset/' + id + '/logs')
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('historyLoading').classList.add('d-none');
+                let html = '';
+                if (data.length === 0) {
+                    html = '<p class="text-center text-muted mb-0 mt-3">No audit logs found for this node.</p>';
+                } else {
+                    data.forEach(log => {
+                        const date = new Date(log.timestamp).toLocaleString();
+                        const prevState = log.previousState ? log.previousState : 'N/A';
+                        html += `
+                        <div class="mb-3 p-3 rounded" style="background: rgba(255,255,255,0.05); border-left: 3px solid var(--accent-glow);">
+                            <div class="d-flex justify-content-between mb-2">
+                                <strong class="text-white">${log.action}</strong>
+                                <small class="text-muted" style="font-size: 0.75rem;">${date}</small>
+                            </div>
+                            <div class="small text-light">
+                                <span style="color:var(--accent-glow); font-weight:bold;">${log.username}</span> changed status 
+                                from <span class="text-muted px-1">${prevState}</span> 
+                                to <span class="fw-bold text-white px-1">${log.newState}</span>
+                            </div>
+                        </div>`;
+                    });
+                }
+                document.getElementById('historyTimeline').innerHTML = html;
+            })
+            .catch(err => {
+                document.getElementById('historyLoading').classList.add('d-none');
+                document.getElementById('historyTimeline').innerHTML = '<p class="text-danger text-center mt-3">Failed to load logs.</p>';
+            });
+    }
+
+    document.getElementById('historyModal').addEventListener('hidden.bs.modal', function () {
+        let editModal = bootstrap.Modal.getInstance(document.getElementById('editAssetModal'));
+        if (!editModal) {
+            editModal = new bootstrap.Modal(document.getElementById('editAssetModal'));
+        }
+        editModal.show();
+    });
 
     function openEditModal(button) {
         document.getElementById('editId').value = button.getAttribute('data-id');
@@ -452,8 +901,18 @@
         document.getElementById('editDesc').value = button.getAttribute('data-desc');
         document.getElementById('editStatus').value = button.getAttribute('data-status');
         document.getElementById('editPurchaseDate').value = button.getAttribute('data-purchaseDate');
+        document.getElementById('editAssignedEmployeeId').value = button.getAttribute('data-employeeId');
+        
+        // Ensure standard modifications also get the bold title style
+        const assetNameStr = button.getAttribute('data-name');
+        const titleEl = document.getElementById('editModalTitleLabel');
+        if (titleEl) {
+            titleEl.innerHTML = '<i class="bi bi-pencil-square me-2" style="color:var(--accent-glow);"></i>Node Details: <span class="text-white">' + (assetNameStr || '') + '</span>';
+        }
+        
         new bootstrap.Modal(document.getElementById('editAssetModal')).show();
     }
+
 </script>
 </body>
 </html>

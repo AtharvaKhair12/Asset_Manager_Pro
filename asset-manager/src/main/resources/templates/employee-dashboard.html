@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Public authorized node access for asset fault reporting and status monitoring.">
-    <title>Asset Node | Public View</title>
+    <meta name="description" content="Employee personalized dashboard for assigned company hardware and software management.">
+    <title>Employee Dashboard | AssetManager Pro</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -73,13 +73,32 @@
             z-index: 10;
         }
 
+        .btn-outline-glow {
+            border: 1px solid var(--accent-glow);
+            color: var(--accent-glow);
+            border-radius: 50px;
+            padding: 8px 24px;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+            transition: var(--transition-pro);
+            backdrop-filter: blur(5px);
+        }
+        .btn-outline-glow:hover {
+            background: var(--accent-glow);
+            color: #000;
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
         /* --- 3D ASSET CARD --- */
         .glass-card-wrapper {
             transition: transform 0.1s;
             perspective: 1000px;
             max-width: 600px;
             width: 95%;
-            margin: 40px auto;
+            margin: 0 auto;
         }
 
         .asset-card {
@@ -112,16 +131,18 @@
         }
 
         /* --- BADGES --- */
-        .badge {
-            background-color: rgba(0, 0, 0, 0.4) !important;
-            border: 1px solid var(--border-glass) !important;
-            color: var(--text-pure) !important;
+        .badge-custom {
+            display: inline-block;
+            background-color: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-glass);
+            color: var(--text-pure);
             font-weight: 700;
             backdrop-filter: blur(5px);
             text-transform: uppercase;
             letter-spacing: 1px;
             padding: 10px 20px;
             border-radius: 50px;
+            font-size: 0.8rem;
         }
 
         /* Category Glow */
@@ -175,7 +196,14 @@
             box-shadow: 0 20px 50px rgba(255, 77, 77, 0.6);
         }
 
-        hr { border-color: rgba(255,255,255,0.1); opacity: 1; margin: 40px 0; }
+        hr.divider { border-color: rgba(255,255,255,0.1); opacity: 1; margin: 40px 0; }
+        
+        .empty-state {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 50px 20px;
+        }
     </style>
 </head>
 <body>
@@ -187,67 +215,93 @@
 <div class="tech-loop">
     <i class="bi bi-cpu" style="font-size: 8rem; top: 10%; right: 10%; opacity: 0.05;"></i>
     <i class="bi bi-shield-lock" style="font-size: 6rem; bottom: 15%; left: 5%; opacity: 0.05; animation-delay: 2s;"></i>
-    <i class="bi bi-qr-code-scan" style="font-size: 5rem; top: 20%; left: 15%; opacity: 0.05; animation-delay: 4s;"></i>
+    <i class="bi bi-person-badge" style="font-size: 5rem; top: 20%; left: 15%; opacity: 0.05; animation-delay: 4s;"></i>
 </div>
 
-<header class="public-header text-center">
-    <div class="reveal-up">
+<header class="public-header d-flex justify-content-between align-items-center">
+    <div>
         <h2 class="fw-bold mb-1"><i class="bi bi-shield-lock-fill me-2" style="color: var(--accent-glow);"></i>AssetManager <span class="fw-light opacity-75">Pro</span></h2>
-        <p class="small text-uppercase tracking-widest mb-0" style="color: var(--accent-glow); letter-spacing: 3px; font-size: 0.75rem;">Authorized Node Identification</p>
+        <p class="small text-uppercase tracking-widest mb-0" style="color: var(--accent-glow); letter-spacing: 3px; font-size: 0.75rem;">Employee Dashboard</p>
+    </div>
+    
+    <div>
+        <!-- Logout Form -->
+        <form th:action="@{/logout}" method="post" class="m-0">
+            <button type="submit" class="btn btn-outline-glow">
+                <i class="bi bi-box-arrow-right me-1"></i> Disconnect
+            </button>
+        </form>
     </div>
 </header>
 
-<main class="container">
-    <div th:if="${param.reported}" class="alert border-0 shadow-lg text-center mb-4 rounded-4 py-3 mx-auto" style="background: rgba(0, 255, 136, 0.15); border: 1px solid rgba(0, 255, 136, 0.3); color: #00ff88; max-width: 600px; margin-top: 20px;">
-        <i class="bi bi-check-circle-fill me-2"></i> FAULT REPORT COMMITTED TO MATRIX
+<main class="container py-5">
+
+    <div class="text-center mb-5">
+        <h1 class="h3 fw-bold">My Personal Assets</h1>
+        <p class="text-muted">Review and manage the devices currently assigned to you.</p>
     </div>
 
-    <div class="glass-card-wrapper" onmousemove="tiltCard(event, this)" onmouseleave="resetTilt(this)">
-        <div class="asset-card text-center">
-            <div class="device-icon">
-                <i class="bi bi-laptop" th:if="${asset.category == 'Hardware'}"></i>
-                <i class="bi bi-code-square" th:if="${asset.category == 'Software'}"></i>
-                <i class="bi bi-box-seam" th:if="${asset.category != 'Hardware' and asset.category != 'Software'}"></i>
-            </div>
+    <div th:if="${param.reported}" class="alert border-0 shadow-lg text-center mb-5 rounded-4 py-3 mx-auto" style="background: rgba(0, 255, 136, 0.15); border: 1px solid rgba(0, 255, 136, 0.3); color: #00ff88; max-width: 600px;">
+        <i class="bi bi-check-circle-fill me-2"></i> FAULT REPORT COMMITTED TO MATRIX
+    </div>
+    
+    <div th:if="${assets == null or assets.isEmpty()}" class="empty-state text-center mx-auto" style="max-width: 600px;">
+        <i class="bi bi-inbox text-muted display-1 mb-3"></i>
+        <h3 class="h5 text-white">No Assets Assigned</h3>
+        <p class="text-muted small">You currently do not have any hardware or software nodes registered to your identity.</p>
+    </div>
 
-            <h1 class="fw-bold h2 mb-2 text-white" th:text="${asset.assetName}">Device Node</h1>
+    <div class="row layout-container g-5 justify-content-center">
+        <!-- Iterate over each asset assigned to the employee -->
+        <div class="col-12" th:each="asset : ${assets}">
+            <div class="glass-card-wrapper" onmousemove="tiltCard(event, this)" onmouseleave="resetTilt(this)">
+                <article class="asset-card text-center">
+                    <div class="device-icon">
+                        <i class="bi bi-laptop" th:if="${asset.category == 'Hardware'}"></i>
+                        <i class="bi bi-code-square" th:if="${asset.category == 'Software'}"></i>
+                        <i class="bi bi-box-seam" th:if="${asset.category != 'Hardware' and asset.category != 'Software'}"></i>
+                    </div>
 
-            <div class="mb-4">
-                <p class="small fw-bold mb-2 text-accent" style="color: var(--accent-glow); opacity: 0.8;">UNIQUE IDENTIFIER</p>
-                <code class="font-monospace" th:text="${asset.serialNumber}">S/N-0000-0000</code>
-            </div>
+                    <h2 class="fw-bold h2 mb-2 text-white" th:text="${asset.assetName}">Device Node</h2>
 
-            <div class="row g-3 mt-4">
-                <div class="col-6 border-end border-white border-opacity-10">
-                    <p class="small fw-bold mb-2" style="color: var(--text-bright); opacity: 0.7;">CLASS</p>
-                    <span class="badge category-box px-3 py-2" th:text="${asset.category}">Category</span>
-                </div>
-                <div class="col-6">
-                    <p class="small fw-bold mb-2" style="color: var(--text-bright); opacity: 0.7;">STATE</p>
-                    <span class="badge px-3 py-2"
-                          th:classappend="${asset.status == 'Available' ? 'badge-success-glow' : (asset.status == 'In Repair' ? 'badge-alert-repair' : '')}"
-                          th:text="${asset.status}">Available</span>
-                </div>
-            </div>
+                    <div class="mb-4">
+                        <p class="small fw-bold mb-2 text-accent" style="color: var(--accent-glow); opacity: 0.8;">UNIQUE IDENTIFIER</p>
+                        <code class="font-monospace" th:text="${asset.serialNumber}">S/N-0000-0000</code>
+                    </div>
 
-            <hr>
+                    <div class="row g-3 mt-4">
+                        <div class="col-6 border-end border-white border-opacity-10">
+                            <p class="small fw-bold mb-2" style="color: var(--text-bright); opacity: 0.7;">CLASS</p>
+                            <span class="badge-custom category-box" th:text="${asset.category}">Category</span>
+                        </div>
+                        <div class="col-6">
+                            <p class="small fw-bold mb-2" style="color: var(--text-bright); opacity: 0.7;">STATE</p>
+                            <span class="badge-custom"
+                                  th:classappend="${asset.status == 'Available' ? 'badge-success-glow' : (asset.status == 'In Repair' ? 'badge-alert-repair' : '')}"
+                                  th:text="${asset.status}">Available</span>
+                        </div>
+                    </div>
 
-            <div class="mb-4 text-start p-4 rounded-4" style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05);">
-                <p class="small fw-bold text-uppercase mb-2" style="color: var(--accent-glow);">Node Description</p>
-                <p class="mb-0" style="color: var(--text-bright); font-size: 0.95rem; line-height: 1.6;" th:text="${asset.billDescription ?: 'No internal audit notes provided.'}"></p>
-            </div>
+                    <hr class="divider">
 
-            <div th:if="${asset.status != 'In Repair'}" class="mt-4">
-                <p class="small mb-4" style="color: var(--text-muted);">Anomalies detected? Initialize maintenance ticket below.</p>
-                <form th:action="@{/public/report-issue/{id}(id=${asset.id})}" method="post">
-                    <button type="submit" class="btn btn-report w-100" aria-label="Report hardware fault to administrator">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i> REPORT HARDWARE FAULT
-                    </button>
-                </form>
-            </div>
+                    <div class="mb-4 text-start p-4 rounded-4" style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05);">
+                        <p class="small fw-bold text-uppercase mb-2" style="color: var(--accent-glow);">Node Description</p>
+                        <p class="mb-0" style="color: var(--text-bright); font-size: 0.95rem; line-height: 1.6;" th:text="${asset.billDescription ?: 'No internal audit notes provided.'}"></p>
+                    </div>
 
-            <div th:if="${asset.status == 'In Repair'}" class="alert bg-primary bg-opacity-10 border border-primary border-opacity-25 text-info rounded-4 mt-4 py-3">
-                <i class="bi bi-tools me-2 text-info"></i> <strong>SYSTEM NOTE:</strong> This node is currently undergoing technician audit.
+                    <div th:if="${asset.status != 'In Repair'}" class="mt-4">
+                        <p class="small mb-4" style="color: var(--text-muted);">Anomalies detected? Initialize maintenance ticket below.</p>
+                        <form th:action="@{/employee/report-issue/{id}(id=${asset.id})}" method="post">
+                            <button type="submit" class="btn btn-report w-100" aria-label="Report issue to administrator">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i> REPORT ISSUE
+                            </button>
+                        </form>
+                    </div>
+
+                    <div th:if="${asset.status == 'In Repair'}" class="alert bg-primary bg-opacity-10 border border-primary border-opacity-25 text-info rounded-4 mt-4 py-3">
+                        <i class="bi bi-tools me-2 text-info"></i> <strong>SYSTEM NOTE:</strong> This node is currently undergoing technician audit.
+                    </div>
+                </article>
             </div>
         </div>
     </div>

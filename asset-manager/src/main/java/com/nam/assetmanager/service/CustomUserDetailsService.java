@@ -27,10 +27,15 @@ public class CustomUserDetailsService implements UserDetailsService {
         }
 
         // Return a Spring Security User object with the ROLE_ADMIN authority
+        // Using the full constructor to pass the "enabled" flag so unverified users cannot login
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
                 user.getPassword(),
-                Collections.singletonList(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                user.isEnabled(),
+                true, // account non-expired
+                true, // credentials non-expired
+                true, // account non-locked
+                Collections.singletonList(new SimpleGrantedAuthority(user.getRole()))
         );
     }
 }

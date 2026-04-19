@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Authorized login portal for AssetManager Pro administrative terminal.">
-    <title>AssetManager Pro | Authorized Entry</title>
+    <meta name="description" content="Verify your administrative node registration.">
+    <title>AssetManager Pro | Node Verification</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -191,7 +191,9 @@
             padding: 16px 20px;
             border-radius: 14px;
             transition: var(--transition-pro);
-            font-size: 1rem;
+            font-size: 1.5rem;
+            letter-spacing: 10px;
+            text-align: center;
         }
 
         .form-control:focus {
@@ -203,6 +205,7 @@
 
         .form-control::placeholder {
             color: rgba(255, 255, 255, 0.25);
+            letter-spacing: 10px;
         }
 
         /* --- BUTTONS --- */
@@ -242,36 +245,17 @@
             color: #00ff88;
         }
 
-        .btn-glass-nav {
-            background: linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
-            border: 1px solid var(--border-glass);
-            border-radius: 12px;
+        .auth-footer-link {
             color: var(--text-bright);
-            padding: 12px 20px;
+            font-size: 0.9rem;
             text-decoration: none;
-            transition: var(--transition-pro);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.95rem;
-            backdrop-filter: blur(10px);
-            font-weight: 600;
-            width: 100%;
-            margin-bottom: 12px;
+            transition: 0.3s;
+            border-bottom: 1px solid transparent;
         }
 
-        .btn-glass-nav:hover {
-            border-color: var(--accent-glow);
-            background: rgba(0, 242, 255, 0.05);
-            color: white;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.4), 0 0 15px rgba(0, 242, 255, 0.2);
-            transform: translateY(-2px);
-        }
-
-        .btn-glass-nav i {
-            margin-right: 10px;
+        .auth-footer-link:hover {
             color: var(--accent-glow);
-            font-size: 1.1rem;
+            border-color: var(--accent-glow);
         }
     </style>
 </head>
@@ -286,10 +270,10 @@
     <div class="grid-overlay"></div>
 
     <div class="tech-loop">
-        <i class="bi bi-shield-lock"
+        <i class="bi bi-shield-check"
             style="font-size: 10rem; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.03; z-index: -5;"></i>
-        <i class="bi bi-cpu" style="font-size: 5rem; top: 15%; right: 15%; opacity: 0.05;"></i>
-        <i class="bi bi-database"
+        <i class="bi bi-envelope-paper" style="font-size: 5rem; top: 15%; right: 15%; opacity: 0.05;"></i>
+        <i class="bi bi-key"
             style="font-size: 6rem; bottom: 15%; left: 10%; opacity: 0.05; animation-delay: 2s;"></i>
     </div>
 
@@ -298,65 +282,39 @@
             <div class="text-center mb-5">
                 <div class="mb-3 d-inline-block p-3 rounded-circle"
                     style="background: rgba(0, 242, 255, 0.05); border: 1px solid rgba(0, 242, 255, 0.2);">
-                    <i class="bi bi-shield-lock-fill display-4"
+                    <i class="bi bi-shield-check display-4"
                         style="color: var(--accent-glow); filter: drop-shadow(0 0 15px var(--accent-glow));"></i>
                 </div>
-                <h1 class="h3 fw-bold text-white mt-2">Admin <span class="fw-light opacity-75">Terminal</span></h1>
+                <h1 class="h3 fw-bold text-white mt-2">Node <span class="fw-light opacity-75">Verification</span></h1>
                 <p class="small text-bright opacity-75">Secure Database Gateway v2.0</p>
             </div>
 
-            <div th:if="${param.success}" class="alert alert-success border-0 mb-4 text-center shadow-lg" role="alert">
-                <i class="bi bi-check-circle-fill me-2"></i> Node Authorized. Proceed to Login.
+            <div th:if="${param.sent}" class="alert alert-success border-0 mb-4 text-center shadow-lg" role="alert">
+                <i class="bi bi-envelope-check-fill me-2"></i> Registration successful! We've sent a 6-digit code to your email.
             </div>
-            <div th:if="${param.success_employee}" class="alert alert-success border-0 mb-4 text-center shadow-lg"
-                role="alert"
-                style="background: rgba(0, 255, 136, 0.1); border-color: rgba(0, 255, 136, 0.3); color: #00ff88;">
-                <i class="bi bi-person-check-fill me-2"></i> Employee Node Authorized. Ready for Assignments.
-            </div>
-            <div th:if="${param.verify}" class="alert alert-warning border-0 mb-4 text-center shadow-lg" role="alert"
-                 style="background: rgba(255, 193, 7, 0.1); border-color: rgba(255, 193, 7, 0.3); color: #ffc107;">
-                <i class="bi bi-envelope-fill me-2"></i> Registration successful. Please check your email to verify your account.
-            </div>
-            <div th:if="${param.verify_success}" class="alert alert-success border-0 mb-4 text-center shadow-lg" role="alert">
-                <i class="bi bi-check-circle-fill me-2"></i> Email verified successfully! You can now log in.
-            </div>
-            <div th:if="${param.verify_fail}" class="alert alert-danger border-0 mb-4 text-center shadow-lg" role="alert">
-                <i class="bi bi-x-circle-fill me-2"></i> Invalid or already used verification link.
-            </div>
+            
             <div th:if="${param.error}" class="alert alert-danger border-0 mb-4 text-center shadow-lg" role="alert">
-                <i class="bi bi-exclamation-triangle-fill me-2"></i> Access Denied. Verify Credentials.
+                <i class="bi bi-x-circle-fill me-2"></i> Invalid or expired verification code. Please try again.
             </div>
 
-            <form th:action="@{/login}" method="post">
-                <div class="mb-4">
-                    <label class="form-label" for="username">Username</label>
-                    <div class="input-group">
-                        <span class="input-group-text border-0 bg-transparent text-white ps-0"><i
-                                class="bi bi-person"></i></span>
-                        <input type="text" id="username" name="username" class="form-control" placeholder="admin_node"
-                            required autofocus style="border-left: 1px solid var(--border-glass) !important;">
-                    </div>
-                </div>
-                <div class="mb-2">
-                    <label class="form-label" for="password">Access Key</label>
-                    <div class="input-group">
-                        <span class="input-group-text border-0 bg-transparent text-white ps-0"><i
-                                class="bi bi-key"></i></span>
-                        <input type="password" id="password" name="password" class="form-control" placeholder="••••••••"
-                            required style="border-left: 1px solid var(--border-glass) !important;">
-                    </div>
+            <form th:action="@{/verify}" method="post">
+                <div class="mb-4 text-center">
+                    <label class="form-label" for="code">6-Digit Access Code</label>
+                    <input type="text" id="code" name="code" class="form-control" placeholder="000000" maxlength="6"
+                        required autofocus>
                 </div>
 
                 <button type="submit" class="btn btn-terminal w-100 shadow-lg"
-                    aria-label="Establish secure database connection">
-                    Establish Connection <i class="bi bi-arrow-right-short"></i>
+                    aria-label="Verify Code">
+                    Verify Code <i class="bi bi-check2-circle"></i>
                 </button>
             </form>
 
-            <div class="mt-5 pt-4 border-top border-white border-opacity-10">
-                <a href="/" class="btn-glass-nav"><i class="bi bi-house-door"></i> Return to Home Core</a>
-                <a href="/register" class="btn-glass-nav"><i class="bi bi-shield-plus"></i> Initialize Admin Node</a>
-                <a href="/employee/register" class="btn-glass-nav" style="margin-bottom: 0;"><i class="bi bi-person-plus"></i> Register Employee Node</a>
+            <div class="text-center mt-5 pt-4 border-top border-white border-opacity-10">
+                <div class="mb-2">
+                    <a href="/login" class="auth-footer-link">Already Verified? <span
+                            style="color: var(--accent-glow);">Return to Login</span></a>
+                </div>
             </div>
         </main>
 
@@ -375,7 +333,7 @@
             const y = e.clientY - rect.top;
             const centerX = rect.width / 2;
             const centerY = rect.height / 2;
-            const rotateX = ((y - centerY) / centerY) * -8; // Slightly more tilt for login
+            const rotateX = ((y - centerY) / centerY) * -8;
             const rotateY = ((x - centerX) / centerX) * 8;
             card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
         }

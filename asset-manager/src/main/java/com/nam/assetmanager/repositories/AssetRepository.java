@@ -11,4 +11,7 @@ public interface AssetRepository extends JpaRepository<Asset, Long> {
     // This manually teaches the database how to search your assets
     @Query("SELECT a FROM Asset a WHERE a.assetName LIKE %:keyword% OR a.serialNumber LIKE %:keyword%")
     List<Asset> searchAssets(@Param("keyword") String keyword);
+
+    // Fetch assets assigned to a specific employee
+    List<Asset> findByAssignedEmployeeId(Long employeeId);
 }

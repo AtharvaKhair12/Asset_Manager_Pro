@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+
+  # 1. Database Microservice
+  db:
+    image: mysql:8.0.43
+    container_name: assetmanager_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: admin_cloud_password
+      MYSQL_DATABASE: asset_manager
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./asset_manager_backup.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-padmin_cloud_password" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 2. Main Spring Boot Backend
+  app:
+    build: .
+    container_name: assetmanager_app
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/asset_manager?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: admin_cloud_password
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  mysql_data:
