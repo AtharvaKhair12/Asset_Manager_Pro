@@ -29,28 +29,23 @@ public class SecurityConfig {
         @Bean
         public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                 http
-                                .csrf(csrf -> csrf.disable()) // Mandatory for public POST reports
-                                .headers(headers -> headers.frameOptions(frame -> frame.disable())) // Enable iframe embedding
+                                .csrf(csrf -> csrf.disable())
+                                .headers(headers -> headers.frameOptions(frame -> frame.disable()))
                                 .authorizeHttpRequests(auth -> auth
-                                                /* RULE 1: Whitelist landing, auth, and static resources */
-                                                .requestMatchers("/", "/register", "/login", "/employee/register", "/employee/login", "/verify",
+                                                .requestMatchers("/", "/register", "/login", "/employee/register",
+                                                                "/employee/login", "/verify",
                                                                 "/css/**", "/js/**", "/images/**", "/error")
                                                 .permitAll()
-
-                                                /*
-                                                 * RULE 2: String-based whitelisting for public scan paths.
-                                                 * This replaces the AntPathRequestMatcher to resolve IDE errors.
-                                                 */
                                                 .requestMatchers("/public/**").permitAll()
-
-                                                /* RULE 3: Restrict management functions to Admins */
-                                                .requestMatchers("/add-asset", "/update-asset", "/delete-asset/**", "/dashboard/export", "/dashboard/search")
+                                                .requestMatchers("/add-asset", "/update-asset", "/delete-asset/**",
+                                                                "/dashboard/export", "/dashboard/search")
                                                 .hasRole("ADMIN")
-
-                                                /* RULE 4: Protect all other administrative endpoints */
                                                 .anyRequest().authenticated())
                                 .formLogin(form -> form
                                                 .loginPage("/login")
+                                                .loginProcessingUrl("/login")
+                                                .usernameParameter("username")
+                                                .passwordParameter("password")
                                                 .defaultSuccessUrl("/dashboard", true)
                                                 .permitAll())
                                 .logout(logout -> logout
