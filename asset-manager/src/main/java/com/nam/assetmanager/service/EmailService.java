@@ -1,38 +1,40 @@
 package com.nam.assetmanager.service;
 
-import org.springframework.beans.factory.annotation.Value;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.io.UnsupportedEncodingException;
+import com.nam.assetmanager.model.User;
 
 @Service
 public class EmailService {
 
-    @Value("${resend.api.key}")
-    private String apiKey;
+    @Autowired
+    private JavaMailSender mailSender;
 
-    public void sendVerificationEmail(String toEmail, String fullName, String verificationCode, String siteURL)
-            throws Exception {
-        String verifyURL = siteURL + "/verify?code=" + verificationCode;
+    public void sendVerificationEmail(User user, String siteURL)
+            throws MessagingException, UnsupportedEncodingException {
+        String toAddress = user.getEmail();
+        String fromAddress = "titanff78@gmail.com";
+        String senderName = "AssetManager Pro";
+        String subject = "Verify your account";
+        String content = "Dear [[name]],<br><br>"
+                + "Your verification code is: <b>[[code]]</b><br><br>"
+                + "Thank you,<br>AssetManager Pro";
 
-        String body = """
-                {
-                    "from": "AssetManager Pro <onboarding@resend.dev>",
-                    "to": ["%s"],
-                    "subject": "Verify your AssetManager Account",
-                    "html": "<h2>Hello %s</h2><p>Click below to verify your account:</p><a href='%s'>Verify Account</a>"
-                }
-                """.formatted(toEmail, fullName, verifyURL);
+        content = content.replace("[[name]]", user.getFullName());
+        content = content.replace("[[code]]", user.getVerificationCode());
 
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("https://api.resend.com/emails"))
-                .header("Authorization", "Bearer " + apiKey)
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(body))
-                .build();
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message);
+        helper.setFrom(fromAddress, senderName);
+        helper.setTo(toAddress);
+        helper.setSubject(subject);
+        helper.setText(content, true);
 
-        HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+        mailSender.send(message);
     }
 }
